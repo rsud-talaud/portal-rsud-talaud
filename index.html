@@ -1,0 +1,1559 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102a43">
+  <title>Portal Kepegawaian | RSUD Talaud</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --navy: #102a43;
+      --blue: #2563eb;
+      --cyan: #06b6d4;
+      --ink: #172b4d;
+      --muted: #718096;
+      --line: #e7edf4;
+      --surface: #fff;
+      --canvas: #f3f6fa;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --shadow: 0 12px 35px rgba(16, 42, 67, .07);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--canvas); color: var(--ink); }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
+    .login-screen { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(380px, 520px); background: #fff; }
+    .login-visual { position: relative; overflow: hidden; padding: 48px 7vw; color: white; display: flex; flex-direction: column; justify-content: space-between; background: radial-gradient(circle at 75% 25%, rgba(6,182,212,.45), transparent 30%), linear-gradient(145deg, #102a43, #17447a 60%, #2563eb); }
+    .login-visual:after { content: ""; position: absolute; width: 540px; height: 540px; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; right: -200px; bottom: -240px; box-shadow: 0 0 0 55px rgba(255,255,255,.04), 0 0 0 110px rgba(255,255,255,.035); }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 750; letter-spacing: -.02em; }
+    .brand-mark { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 14px; background: linear-gradient(135deg, #fff, #bcecf7); color: var(--blue); font-size: 15px; font-weight: 900; box-shadow: 0 8px 24px rgba(0,0,0,.14); }
+    .login-copy { position: relative; z-index: 1; max-width: 650px; margin: auto 0; }
+    .eyebrow { color: #a7e8f5; font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    .login-copy h1 { max-width: 620px; margin: 20px 0 16px; font-size: clamp(36px, 5vw, 64px); line-height: 1.06; letter-spacing: -.045em; }
+    .login-copy p { max-width: 540px; color: rgba(255,255,255,.78); font-size: 16px; line-height: 1.8; }
+    .visual-foot { color: rgba(255,255,255,.65); font-size: 12px; position: relative; z-index: 1; }
+    .login-panel { display: flex; align-items: center; justify-content: center; padding: 42px; }
+    .login-card { width: min(100%, 390px); }
+    .login-card h2 { margin: 0 0 8px; font-size: 28px; letter-spacing: -.03em; }
+    .login-card > p { margin: 0 0 28px; color: var(--muted); line-height: 1.6; font-size: 14px; }
+    .field { display: grid; gap: 8px; margin-bottom: 16px; }
+    .field label { color: #43536b; font-size: 12px; font-weight: 750; }
+    .field input, .field select, .control { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #dfe6ee; border-radius: 10px; outline: none; background: #fff; color: var(--ink); }
+    input[data-name-format], input[data-back-title-format] { font-weight: 750; text-transform: none; }
+    .field input:focus, .field select:focus, .control:focus { border-color: #7aa4f8; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+    [data-uppercase-bold="true"], [data-name-format="true"] { text-transform: uppercase; font-weight: 800; }
+    .formatted-person-name { text-transform: uppercase; font-weight: 800; }
+    .password-wrap { display: flex; }
+    .password-wrap input { border-radius: 10px 0 0 10px; }
+    .password-wrap button { padding: 0 13px; border: 1px solid #dfe6ee; border-left: 0; border-radius: 0 10px 10px 0; background: white; color: var(--muted); }
+    .login-row { display: flex; justify-content: space-between; align-items: center; margin: 4px 0 20px; color: var(--muted); font-size: 12px; }
+    .check { display: flex; gap: 8px; align-items: center; }
+    .check input { accent-color: var(--blue); }
+    .text-button { padding: 0; border: 0; background: transparent; color: var(--blue); font-weight: 700; }
+    .btn { border: 0; border-radius: 10px; min-height: 42px; padding: 0 15px; display: inline-flex; gap: 8px; align-items: center; justify-content: center; font-weight: 750; transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { color: #fff; background: linear-gradient(135deg, var(--blue), #4380f7); box-shadow: 0 8px 18px rgba(37,99,235,.18); }
+    .btn-primary:hover { box-shadow: 0 11px 22px rgba(37,99,235,.26); }
+    .btn-light { color: #40516a; background: #f1f5f9; }
+    .btn-outline { color: #475569; background: white; border: 1px solid var(--line); }
+    .btn-danger { color: #fff; background: var(--red); }
+    .w-full { width: 100%; }
+    .demo-hint { margin-top: 20px; border: 1px dashed #cfe0f4; border-radius: 10px; background: #f6faff; padding: 12px 14px; color: #63748b; font-size: 12px; line-height: 1.6; }
+    .demo-hint strong { color: #355277; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: 252px 1fr; }
+    .sidebar { position: sticky; top: 0; height: 100vh; background: var(--navy); color: #d3deea; display: flex; flex-direction: column; padding: 22px 14px 16px; z-index: 10; }
+    .sidebar .brand { padding: 2px 8px 24px; color: white; font-size: 13px; }
+    .sidebar .brand-mark { width: 39px; height: 39px; border-radius: 12px; font-size: 13px; }
+    .side-label { margin: 16px 10px 8px; color: #8297ad; font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .nav { display: grid; gap: 4px; }
+    .nav button { width: 100%; min-height: 43px; display: flex; align-items: center; gap: 12px; padding: 0 12px; border: 0; border-radius: 9px; color: #b7c5d5; background: transparent; text-align: left; font-size: 13px; transition: .18s ease; }
+    .nav button:hover { color: white; background: rgba(255,255,255,.08); }
+    .nav button.active { color: white; background: linear-gradient(90deg, rgba(37,99,235,.95), rgba(37,99,235,.65)); box-shadow: 0 8px 18px rgba(0,0,0,.12); }
+    .nav-icon { width: 18px; text-align: center; font-size: 16px; }
+    .sidebar-bottom { margin-top: auto; }
+    .storage-note { padding: 12px; margin: 12px 4px; border-radius: 10px; background: rgba(255,255,255,.07); color: #aab9ca; font-size: 11px; line-height: 1.55; }
+    .storage-note strong { color: #f2c56b; }
+    .main { min-width: 0; }
+    .topbar { height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 0 34px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.88); backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 5; }
+    .crumb { color: var(--muted); font-size: 12px; }
+    .crumb strong { color: var(--ink); font-size: 14px; }
+    .top-actions { display: flex; align-items: center; gap: 12px; }
+    .icon-button { width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: #5b6b80; position: relative; }
+    .notify-dot { position: absolute; top: 7px; right: 7px; width: 7px; height: 7px; border: 1px solid white; background: var(--red); border-radius: 50%; }
+    .user-chip { display: flex; align-items: center; gap: 9px; padding-left: 4px; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: linear-gradient(140deg, #0ea5e9, #2563eb); font-size: 12px; font-weight: 800; }
+    .user-meta { line-height: 1.25; }
+    .user-meta strong { display: block; font-size: 12px; }
+    .user-meta small { color: var(--muted); font-size: 10px; }
+    .content { max-width: 1500px; margin: auto; padding: 30px 34px 46px; }
+    .page-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+    .page-heading h1 { margin: 0 0 6px; font-size: 25px; letter-spacing: -.035em; }
+    .page-heading p { margin: 0; color: var(--muted); font-size: 13px; }
+    .heading-actions { display: flex; gap: 9px; flex-wrap: wrap; }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; margin-bottom: 18px; }
+    .card { border: 1px solid #edf1f6; border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+    .stat-card { min-height: 134px; padding: 17px 18px; position: relative; overflow: hidden; transition: transform .2s ease, box-shadow .2s ease; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 16px 36px rgba(16,42,67,.11); }
+    .stat-top { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 12px; font-weight: 650; }
+    .stat-icon { width: 35px; height: 35px; display: grid; place-items: center; border-radius: 11px; color: var(--blue); background: #edf4ff; font-size: 17px; }
+    .stat-card:nth-child(2) .stat-icon { color: #0891b2; background: #e8fbff; }
+    .stat-card:nth-child(3) .stat-icon { color: #d97706; background: #fff7e6; }
+    .stat-card:nth-child(4) .stat-icon { color: #059669; background: #e7fbf3; }
+    .stat-value { margin: 12px 0 4px; font-size: 29px; line-height: 1; font-weight: 800; letter-spacing: -.04em; }
+    .stat-caption { color: var(--muted); font-size: 11px; }
+    .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .85fr); gap: 18px; }
+    .panel { padding: 20px; }
+    .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 17px; }
+    .panel-head h2 { margin: 0 0 5px; font-size: 15px; letter-spacing: -.02em; }
+    .panel-head p { margin: 0; color: var(--muted); font-size: 11px; }
+    .legend { display: flex; gap: 14px; color: var(--muted); font-size: 10px; }
+    .legend span:before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 50%; background: var(--blue); }
+    .legend span:nth-child(2):before { background: var(--cyan); }
+    .chart { height: 208px; display: flex; align-items: end; gap: clamp(10px, 2vw, 24px); padding: 17px 8px 0; border-bottom: 1px solid #edf1f5; background: repeating-linear-gradient(to bottom, transparent 0, transparent 50px, #f1f4f8 51px); }
+    .chart-col { flex: 1; height: 100%; display: flex; align-items: end; justify-content: center; gap: 5px; position: relative; }
+    .bar { width: min(18px, 38%); border-radius: 5px 5px 0 0; background: linear-gradient(180deg, #5790ff, #2563eb); min-height: 7px; animation: grow .7s ease both; transform-origin: bottom; }
+    .bar.alt { background: linear-gradient(180deg, #55d5e6, #06b6d4); animation-delay: .08s; }
+    .month { position: absolute; bottom: -22px; color: #8492a5; font-size: 10px; }
+    @keyframes grow { from { transform: scaleY(.1); opacity: .4; } to { transform: scaleY(1); opacity: 1; } }
+    .contract-list { display: grid; gap: 16px; }
+    .contract-row { display: flex; align-items: center; gap: 11px; }
+    .contract-mark { width: 34px; height: 34px; flex: none; border-radius: 10px; display: grid; place-items: center; font-size: 12px; font-weight: 800; color: var(--blue); background: #edf4ff; }
+    .contract-info { min-width: 0; flex: 1; }
+    .contract-info strong { display: block; margin-bottom: 6px; font-size: 11px; }
+    .progress { height: 6px; border-radius: 8px; background: #edf1f6; overflow: hidden; }
+    .progress i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--blue), #6da0ff); }
+    .contract-count { color: #65758b; font-size: 11px; font-weight: 700; }
+    .bottom-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .85fr); gap: 18px; margin-top: 18px; }
+    .activity-list { display: grid; }
+    .activity { display: flex; align-items: flex-start; gap: 11px; padding: 12px 0; border-top: 1px solid #f0f3f7; }
+    .activity:first-child { border-top: 0; padding-top: 0; }
+    .activity-dot { width: 8px; height: 8px; margin-top: 5px; flex: none; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 0 4px #e7faff; }
+    .activity p { margin: 0; font-size: 11px; line-height: 1.55; }
+    .activity small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .table-card { overflow: hidden; }
+    .table-tools { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 17px 18px; border-bottom: 1px solid var(--line); }
+    .tool-group { display: flex; gap: 9px; align-items: center; flex-wrap: wrap; }
+    .search { width: min(265px, 45vw); min-height: 39px; padding: 8px 12px; border: 1px solid #e0e7ef; border-radius: 9px; outline: 0; font-size: 12px; }
+    .search:focus { border-color: #7aa4f8; box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+    .filter { min-height: 39px; padding: 7px 10px; border: 1px solid #e0e7ef; border-radius: 9px; background: #fff; color: #52647a; font-size: 12px; }
+    .table-wrap { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 800px; }
+    th { padding: 12px 16px; color: #8290a3; background: #fbfcfe; text-align: left; font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+    td { padding: 13px 16px; border-top: 1px solid #f0f3f7; color: #53647b; font-size: 11px; white-space: nowrap; }
+    .employee-cell { display: flex; align-items: center; gap: 9px; }
+    .employee-avatar { width: 32px; height: 32px; display: grid; place-items: center; flex: none; border-radius: 10px; background: #edf4ff; color: #316ce0; font-size: 10px; font-weight: 800; }
+    .employee-name { color: #20344e; font-weight: 750; }
+    .employee-sub { display: block; margin-top: 3px; color: #94a0b0; font-size: 10px; }
+    .badge { display: inline-flex; padding: 5px 8px; border-radius: 20px; font-size: 10px; font-weight: 750; }
+    .badge-active { color: #07875d; background: #e7f9f1; }
+    .badge-leave { color: #b56c00; background: #fff5dd; }
+    .badge-inactive { color: #64748b; background: #eef2f6; }
+    .row-actions { display: flex; gap: 5px; }
+    .row-actions button { width: 29px; height: 29px; border: 1px solid #e8edf3; border-radius: 8px; background: #fff; color: #64748b; }
+    .row-actions button:hover { color: var(--blue); background: #f4f8ff; }
+    .empty { padding: 40px; text-align: center; color: var(--muted); font-size: 13px; }
+    .pagination { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+    .doc-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; }
+    .doc-card { padding: 18px; }
+    .doc-icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 11px; background: #eef4ff; color: var(--blue); font-weight: 850; }
+    .doc-card h3 { margin: 15px 0 5px; font-size: 13px; }
+    .doc-card p { color: var(--muted); font-size: 11px; line-height: 1.55; min-height: 34px; }
+    .doc-card .btn { min-height: 35px; font-size: 11px; }
+    .report-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .report-card { padding: 20px; }
+    .report-card h3 { margin: 0 0 7px; font-size: 14px; }
+    .report-card p { margin: 0 0 16px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+    .report-metric { font-size: 27px; font-weight: 800; letter-spacing: -.04em; }
+    .report-sub { color: var(--muted); font-size: 10px; }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 18px; background: rgba(12,27,45,.55); backdrop-filter: blur(5px); animation: fade .18s ease; }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    .modal { width: min(100%, 650px); max-height: min(90vh, 850px); overflow: auto; border-radius: 16px; background: white; box-shadow: 0 25px 80px rgba(0,0,0,.25); animation: rise .2s ease; }
+    @keyframes rise { from { transform: translateY(10px) scale(.99); } to { transform: translateY(0) scale(1); } }
+    .modal-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 20px 22px; border-bottom: 1px solid var(--line); }
+    .modal-head h2 { margin: 0 0 5px; font-size: 17px; }
+    .modal-head p { margin: 0; color: var(--muted); font-size: 11px; }
+    .close-button { border: 0; background: transparent; color: #718096; font-size: 22px; line-height: 1; }
+    .modal-body { padding: 20px 22px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 14px; }
+    .modal-foot { display: flex; justify-content: flex-end; gap: 9px; padding: 14px 22px 20px; }
+    .print-preview-modal { width: min(96vw, 920px); }
+    .print-preview-modal .modal-body { max-height: calc(90vh - 150px); overflow: auto; background: #eef2f6; }
+    .print-preview-modal .print-frame { padding: 28px 34px; border: 1px solid #dfe5ec; background: white; box-shadow: 0 8px 24px rgba(16,42,67,.08); }
+    .print-preview-modal table { width: 100%; border-collapse: collapse; }
+    .print-preview-modal .signature { display: flex; justify-content: space-between; margin-top: 60px; }
+    .print-preview-modal ul { padding-left: 20px; line-height: 1.6; }
+    .toast { position: fixed; z-index: 50; right: 22px; bottom: 22px; max-width: min(390px, calc(100vw - 44px)); padding: 13px 17px; border-radius: 11px; color: white; background: #173c60; box-shadow: 0 12px 30px rgba(16,42,67,.25); font-size: 12px; animation: rise .2s ease; }
+    .toast.error { background: #b42332; }
+    .mobile-menu { display: none; }
+    .muted-note { margin: 0 0 16px; padding: 11px 13px; border: 1px solid #f3e3b8; border-radius: 9px; color: #85621c; background: #fffbef; font-size: 11px; line-height: 1.55; }
+    .field textarea { width: 100%; min-height: 84px; padding: 10px 12px; resize: vertical; border: 1px solid #dfe6ee; border-radius: 10px; outline: none; color: var(--ink); }
+    .field textarea:focus { border-color: #7aa4f8; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+    .profile-banner { display: flex; align-items: center; gap: 18px; padding: 22px; margin-bottom: 18px; color: #fff; border-radius: 16px; background: radial-gradient(circle at 85% 20%,rgba(6,182,212,.35),transparent 30%),linear-gradient(120deg,#102a43,#1f56a0); box-shadow: 0 15px 32px rgba(16,42,67,.16); }
+    .profile-photo { width: 76px; height: 76px; flex: none; display: grid; place-items: center; overflow: hidden; border: 3px solid rgba(255,255,255,.75); border-radius: 50%; color: #1554af; background: #eaf5ff; font-size: 22px; font-weight: 850; }
+    .profile-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-banner h2 { margin: 0 0 5px; font-size: 20px; letter-spacing: -.025em; }
+    .profile-banner p { margin: 0; color: rgba(255,255,255,.78); font-size: 12px; line-height: 1.7; }
+    .profile-banner .badge { margin-top: 9px; color: #d5fff1; background: rgba(16,185,129,.2); }
+    .personal-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin-bottom: 17px; }
+    .completion-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+    .completion-card { padding: 14px; border: 1px solid #edf1f6; border-radius: 11px; background: #fff; }
+    .completion-card-head { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 10px; color: #465a72; font-size: 11px; font-weight: 750; }
+    .completion-card-head strong { color: var(--blue); }
+    .profile-info-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 13px; margin-top: 18px; }
+    .profile-info { min-width: 0; padding: 13px; border: 1px solid rgba(255,255,255,.14); border-radius: 10px; background: rgba(255,255,255,.07); }
+    .profile-info small { display: block; margin-bottom: 5px; color: rgba(255,255,255,.65); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
+    .profile-info strong { display: block; overflow-wrap: anywhere; color: white; font-size: 11px; }
+    .info-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1px 18px; }
+    .info-item { padding: 12px 0; border-bottom: 1px solid #f0f3f7; }
+    .info-item small { display: block; margin-bottom: 5px; color: var(--muted); font-size: 10px; }
+    .info-item strong { color: #344860; font-size: 12px; overflow-wrap: anywhere; }
+    .record-list { display: grid; gap: 10px; }
+    .record-card { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 13px; border: 1px solid #edf1f6; border-radius: 11px; background: #fff; }
+    .record-card h3 { margin: 0 0 5px; font-size: 12px; }
+    .record-card p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
+    .record-actions { display: flex; flex: none; gap: 5px; }
+    .record-actions button { min-height: 30px; padding: 0 9px; border: 1px solid var(--line); border-radius: 8px; color: #52647a; background: white; font-size: 10px; }
+    .record-actions button:hover { color: var(--blue); background: #f5f8ff; }
+    .document-row { display: flex; align-items: center; gap: 11px; padding: 12px 0; border-top: 1px solid #f0f3f7; }
+    .document-row:first-child { border-top: 0; }
+    .document-mark { width: 36px; height: 38px; flex: none; display: grid; place-items: center; border-radius: 9px; color: #2764d8; background: #edf4ff; font-size: 10px; font-weight: 850; }
+    .document-meta { min-width: 0; flex: 1; }
+    .document-meta strong { display: block; overflow: hidden; color: #344860; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+    .document-meta small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .status-pending { color: #a36500; background: #fff5dd; }
+    .status-approved { color: #07875d; background: #e7f9f1; }
+    .status-rejected { color: #b42332; background: #ffebed; }
+    .notice-list { display: grid; gap: 8px; }
+    .notice-item { padding: 10px 12px; border-left: 3px solid var(--amber); border-radius: 8px; color: #71551b; background: #fffbef; font-size: 11px; line-height: 1.55; }
+    .subsection-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 20px 0 11px; }
+    .subsection-head h2 { margin: 0; font-size: 14px; }
+    .security-banner { padding: 12px 14px; margin-bottom: 16px; border: 1px solid #f3e3b8; border-radius: 10px; color: #85621c; background: #fffbef; font-size: 11px; line-height: 1.6; }
+    .request-change { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+    .request-change .field:last-child { grid-column: 1 / -1; }
+    .print-frame { max-width: 760px; margin: 0 auto; color: #1d2939; font-family: Arial, sans-serif; }
+    .print-frame h1 { font-size: 20px; text-align: center; }
+    .print-frame h2 { margin-top: 24px; padding-bottom: 6px; border-bottom: 1px solid #ccd3dc; font-size: 14px; }
+    .print-frame table { min-width: 0; }
+    .print-frame th { width: 34%; color: #344054; background: #f2f4f7; }
+    .print-frame td,.print-frame th { padding: 8px; border: 1px solid #d0d5dd; white-space: normal; }
+    @media print {
+      body { background: white; }
+      .sidebar,.topbar,.page-heading,.heading-actions,.muted-note,.security-banner,.record-actions,.toast,.modal-head,.modal-foot { display: none !important; }
+      .app { display: block; min-height: auto; }
+      .content { max-width: none; padding: 0; }
+      .card { box-shadow: none; }
+      .modal-backdrop { position: static !important; display: block !important; padding: 0 !important; background: white !important; backdrop-filter: none !important; }
+      .print-preview-modal { width: 100% !important; max-height: none !important; overflow: visible !important; border-radius: 0 !important; box-shadow: none !important; }
+      .print-preview-modal .modal-body { max-height: none !important; overflow: visible !important; padding: 0 !important; background: white !important; }
+      .print-preview-modal .print-frame { max-width: none !important; padding: 12mm !important; border: 0 !important; box-shadow: none !important; }
+    }
+    @media (max-width: 1050px) {
+      .app { grid-template-columns: 220px 1fr; }
+      .content { padding: 25px 22px 38px; }
+      .topbar { padding: 0 22px; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .dashboard-grid, .bottom-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 720px) {
+      .login-screen { grid-template-columns: 1fr; }
+      .login-visual { min-height: 260px; padding: 25px; }
+      .login-copy { margin: 35px 0 20px; }
+      .login-copy h1 { font-size: 35px; }
+      .login-copy p { font-size: 13px; }
+      .visual-foot { display: none; }
+      .login-panel { padding: 30px 24px 40px; }
+      .app { display: block; }
+      .sidebar { position: fixed; left: -270px; width: 252px; transition: left .22s ease; box-shadow: 12px 0 30px rgba(0,0,0,.15); }
+      .sidebar.open { left: 0; }
+      .topbar { height: 64px; padding: 0 15px; }
+      .mobile-menu { display: inline-grid; place-items: center; width: 35px; height: 35px; margin-right: 8px; border: 1px solid var(--line); border-radius: 9px; background: white; color: var(--ink); }
+      .crumb { display: flex; align-items: center; }
+      .user-meta { display: none; }
+      .content { padding: 22px 14px 34px; }
+      .page-heading { flex-direction: column; }
+      .stats { gap: 10px; }
+      .stat-card { min-height: 120px; padding: 13px; }
+      .stat-value { font-size: 25px; }
+      .panel { padding: 16px; }
+      .table-tools { align-items: stretch; flex-direction: column; }
+      .tool-group { width: 100%; }
+      .search { width: 100%; }
+      .filter { flex: 1; }
+      .doc-grid, .report-grid { grid-template-columns: 1fr; }
+      .completion-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .profile-info-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 440px) {
+      .profile-banner { align-items: flex-start; padding: 16px; gap: 12px; }
+      .profile-photo { width: 58px; height: 58px; }
+      .profile-banner h2 { font-size: 16px; }
+      .profile-info-grid,.completion-grid,.personal-grid,.info-grid,.request-change { grid-template-columns: 1fr; }
+      .request-change .field:last-child { grid-column: auto; }
+      .record-card { flex-direction: column; }
+      .document-row { align-items: flex-start; flex-wrap: wrap; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *:before, *:after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <section class="login-screen" id="loginScreen">
+    <div class="login-visual">
+      <div class="brand"><div class="brand-mark">RS</div><span>RSUD TALAUD</span></div>
+      <div class="login-copy">
+        <div class="eyebrow">Portal internal kepegawaian</div>
+        <h1>Kelola talenta, tingkatkan layanan.</h1>
+        <p>Sistem Informasi Manajemen Data Pegawai Pemerintah dengan Perjanjian Kerja RSUD Talaud.</p>
+      </div>
+      <div class="visual-foot">© 2026 Rumah Sakit Umum Daerah Talaud</div>
+    </div>
+    <div class="login-panel">
+      <form class="login-card" id="loginForm">
+        <h2>Selamat datang</h2>
+        <p>Masuk ke portal manajemen kepegawaian PPPK dan PPPK Paruh Waktu.</p>
+        <div class="field"><label for="username">Username</label><input id="username" autocomplete="username" required placeholder="Masukkan username"></div>
+        <div class="field"><label for="password">Password</label><div class="password-wrap"><input id="password" type="password" autocomplete="current-password" required placeholder="Masukkan password"><button id="togglePassword" type="button" aria-label="Tampilkan password">Lihat</button></div></div>
+        <div class="login-row"><label class="check"><input type="checkbox" id="rememberMe"> Ingat saya</label><button class="text-button" type="button" id="forgotButton">Lupa password?</button></div>
+        <button class="btn btn-primary w-full" type="submit">Masuk ke portal <span>→</span></button>
+        <div class="demo-hint"><strong>Akun demo:</strong><br>Admin: <b>admin</b> / <b>admin123</b><br>Pegawai: <b>pegawai</b> / <b>pegawai123</b><br>Akun pegawai hanya melihat profil yang ditautkan. Login hanya simulasi browser, bukan autentikasi aman.</div>
+      </form>
+    </div>
+  </section>
+
+  <div class="app hidden" id="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><div class="brand-mark">RS</div><span>RSUD TALAUD</span></div>
+      <div class="side-label">Menu utama</div>
+      <nav class="nav" id="navigation">
+        <button class="active" data-page="dashboard"><span class="nav-icon">▦</span>Dashboard</button>
+        <button data-page="employees"><span class="nav-icon">♙</span>Data Pegawai</button>
+        <button data-page="history" data-employee-only class="hidden"><span class="nav-icon">⌁</span>Riwayat Hidup</button>
+        <button data-page="family" data-employee-only class="hidden"><span class="nav-icon">♡</span>Keluarga & KP4</button>
+        <button data-page="documents"><span class="nav-icon">▤</span>Dokumen</button>
+        <button data-page="requests" data-employee-only class="hidden"><span class="nav-icon">⇧</span>Pengajuan Saya</button>
+        <button data-page="review" data-admin-only class="hidden"><span class="nav-icon">✓</span>Verifikasi Pengajuan</button>
+        <button data-page="reports" data-admin-only class="hidden"><span class="nav-icon">▥</span>Laporan</button>
+      </nav>
+      <div class="side-label" data-admin-only>Preferensi</div>
+      <nav class="nav" data-admin-only><button id="resetDemo"><span class="nav-icon">↻</span>Reset data demo</button></nav>
+      <div class="sidebar-bottom">
+        <div class="storage-note"><strong>Mode demo</strong><br>Data disimpan di penyimpanan browser ini saja. Belum terhubung ke Google atau server.</div>
+        <nav class="nav"><button id="logoutButton"><span class="nav-icon">↪</span>Keluar</button></nav>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="crumb"><button class="mobile-menu" id="mobileMenu" aria-label="Buka menu">☰</button><span>Portal / <strong id="crumbTitle">Dashboard</strong></span></div>
+        <div class="top-actions">
+          <button class="icon-button" id="notificationButton" aria-label="Notifikasi">♧<i class="notify-dot"></i></button>
+          <div class="user-chip"><div class="avatar" id="userAvatar">AD</div><div class="user-meta"><strong id="userDisplayName">Administrator</strong><small id="userRoleLabel">Pengelola kepegawaian</small></div></div>
+        </div>
+      </header>
+      <div class="content" id="pageContent"></div>
+    </main>
+  </div>
+  <div id="modalHost"></div>
+  <div id="toastHost"></div>
+  <input class="hidden" id="csvInput" type="file" accept=".csv,text/csv">
+
+  <script>
+(() => {
+  const STORE_KEY = "rsud-talaud-e-personal-demo-v1";
+  const MAX_FILE_BYTES = 1024 * 1024;
+  const NOT_FILLED = "Belum dilengkapi";
+  const bankOptions = [
+    "Bank Mandiri",
+    "Bank Rakyat Indonesia (BRI)",
+    "Bank Negara Indonesia (BNI)",
+    "Bank Tabungan Negara (BTN)",
+    "Bank SulutGo"
+  ];
+
+  const biodataFields = [
+    {name:"fullName",label:"Nama lengkap sesuai KTP",nameFormat:true},
+    {name:"frontTitle",label:"Gelar depan",type:"select",options:["Dr","dr","Ns","Ir"]},
+    {name:"backTitle",label:"Gelar belakang"},
+    {name:"nik",label:"NIK"},
+    {name:"kkNumber",label:"Nomor Kartu Keluarga"},
+    {name:"birthPlace",label:"Tempat lahir"},
+    {name:"birthDate",label:"Tanggal lahir",type:"date"},
+    {name:"gender",label:"Jenis kelamin",type:"select",options:["Laki-laki","Perempuan"]},
+    {name:"religion",label:"Agama",type:"select",options:["Islam","Kristen","Katolik","Hindu","Buddha","Konghucu","Lainnya"]},
+    {name:"maritalStatus",label:"Status perkawinan",type:"select",options:["Belum Kawin","Kawin","Cerai Hidup","Cerai Mati"]},
+    {name:"citizenship",label:"Kewarganegaraan",value:"WNI"},
+    {name:"bloodType",label:"Golongan darah",type:"select",options:["A","B","AB","O","Tidak diketahui"]},
+    {name:"height",label:"Tinggi badan (cm)",type:"number"},
+    {name:"weight",label:"Berat badan (kg)",type:"number"},
+    {name:"addressKtp",label:"Alamat sesuai KTP",type:"textarea"},
+    {name:"addressDomicile",label:"Alamat domisili",type:"textarea"},
+    {name:"village",label:"Desa/Kelurahan"},
+    {name:"district",label:"Kecamatan"},
+    {name:"regency",label:"Kabupaten"},
+    {name:"province",label:"Provinsi"},
+    {name:"postalCode",label:"Kode pos"},
+    {name:"phone",label:"Nomor telepon",type:"tel"},
+    {name:"whatsapp",label:"Nomor WhatsApp",type:"tel"},
+    {name:"emailPersonal",label:"Email pribadi",type:"email"},
+    {name:"emailWork",label:"Email kedinasan",type:"email"},
+    {name:"npwp",label:"Nomor NPWP"},
+    {name:"bpjsHealth",label:"Nomor BPJS Kesehatan"},
+    {name:"bpjsEmployment",label:"Nomor BPJS Ketenagakerjaan"},
+    {name:"taspen",label:"Nomor Taspen"},
+    {name:"bankName",label:"Nama bank",type:"select",options:bankOptions},
+    {name:"bankBranch",label:"Cabang bank"},
+    {name:"bankAccount",label:"Nomor rekening"},
+    {name:"bankOwner",label:"Nama pemilik rekening"}
+  ];
+
+  const historyTypes = {
+    education: {
+      label:"Pendidikan",
+      fields:[
+        {name:"level",label:"Jenjang",type:"select",options:["SD","SMP","SMA/SMK","D1","D2","D3","D4","S1","Profesi","S2","S3"]},
+        {name:"institution",label:"Sekolah/perguruan tinggi",required:true},
+        {name:"major",label:"Jurusan"},
+        {name:"place",label:"Tempat pendidikan"},
+        {name:"startYear",label:"Tahun masuk",type:"number"},
+        {name:"graduateYear",label:"Tahun lulus",type:"number"},
+        {name:"diplomaNumber",label:"Nomor ijazah"},
+        {name:"issueDate",label:"Tanggal ijazah",type:"date"},
+        {name:"grade",label:"IPK/nilai akhir"}
+      ]
+    },
+    jobs: {
+      label:"Riwayat pekerjaan",
+      fields:[
+        {name:"institution",label:"Nama instansi",required:true},
+        {name:"position",label:"Jabatan"},
+        {name:"unit",label:"Unit kerja"},
+        {name:"employmentStatus",label:"Status pekerjaan"},
+        {name:"startDate",label:"Tanggal mulai",type:"date"},
+        {name:"endDate",label:"Tanggal selesai",type:"date"},
+        {name:"description",label:"Keterangan",type:"textarea"}
+      ]
+    },
+    training: {
+      label:"Pelatihan & sertifikasi",
+      fields:[
+        {name:"name",label:"Nama pelatihan/sertifikat",required:true},
+        {name:"provider",label:"Penyelenggara"},
+        {name:"date",label:"Tanggal kegiatan",type:"date"},
+        {name:"hours",label:"Jumlah jam pelajaran",type:"number"},
+        {name:"certificateNumber",label:"Nomor sertifikat"}
+      ]
+    },
+    awards: {
+      label:"Penghargaan",
+      fields:[
+        {name:"name",label:"Nama penghargaan",required:true},
+        {name:"issuer",label:"Instansi pemberi"},
+        {name:"year",label:"Tahun",type:"number"},
+        {name:"description",label:"Keterangan",type:"textarea"}
+      ]
+    },
+    organizations: {
+      label:"Organisasi",
+      fields:[
+        {name:"name",label:"Nama organisasi",required:true},
+        {name:"position",label:"Jabatan dalam organisasi"},
+        {name:"startYear",label:"Tahun mulai",type:"number"},
+        {name:"endYear",label:"Tahun selesai",type:"number"},
+        {name:"description",label:"Keterangan",type:"textarea"}
+      ]
+    }
+  };
+
+  const documentCategories = [
+    "Identitas pribadi","Kartu Keluarga","Buku nikah","Akta perkawinan","Akta kelahiran anak",
+    "Ijazah pribadi","Ijazah anak","Transkrip nilai","SK kepegawaian","Dokumen PPPK",
+    "Dokumen KP4","Dokumen profesi","Sertifikat","NPWP","Dokumen rekening","Dokumen pendukung lainnya"
+  ];
+
+  let personalStore = readStore();
+
+  function readStore() {
+    try {
+      const saved = localStorage.getItem(STORE_KEY);
+      if (!saved) return {};
+      const parsed = JSON.parse(saved);
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    } catch (error) {
+      console.error("Tidak dapat membaca E-Personal demo:", error);
+      return {};
+    }
+  }
+  function persist() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(personalStore));
+      return true;
+    } catch (error) {
+      personalStore = readStore();
+      notify("Data E-Personal gagal disimpan. Penyimpanan browser mungkin penuh.", true);
+      return false;
+    }
+  }
+  function h(value) { return escapeHtml(value ?? ""); }
+  function normalizeName(value) {
+    return String(value||"").trim().replace(/\s+/g," ").toUpperCase();
+  }
+  function normalizeBackTitle(value) {
+    let text=String(value||"").trim().replace(/\s+/g,"").replace(/,+/g,".");
+    if(!text) return "";
+    const parts=text.split(".").filter(Boolean).map(part=>part.toUpperCase());
+    if(parts.length===1) return `${parts[0]}.`;
+    const rest=parts.slice(1).map(part=>{
+      if(part.length===1) return part;
+      if(["KES","KEP","NS","KEB","GIZI","SOS","POL"].includes(part)) return part==="KES"?"Kes":part==="KEP"?"Kep":part==="NS"?"Ns":part==="KEB"?"Keb":part==="GIZI"?"Gizi":part==="SOS"?"Sos":"Pol";
+      return part.charAt(0)+part.slice(1).toLowerCase();
+    });
+    return `${parts[0]}. ${rest.join(".")}`;
+  }
+  function normalizeFrontTitle(value) {
+    const title=String(value||"").trim().replace(/\.$/,"");
+    if(!title) return "";
+    return title==="dr"? "dr." : `${title.charAt(0).toUpperCase()+title.slice(1).toLowerCase()}.`;
+  }
+  function formatFullName(profile) {
+    const baseName=normalizeName(profile.fullName||profile.name||"");
+    if(!baseName) return "";
+    const front=normalizeFrontTitle(profile.frontTitle||"");
+    const back=normalizeBackTitle(profile.backTitle||"");
+    return `${front?front+" ":""}${baseName}${back?", "+back:""}`;
+  }
+  function recordFor(id = currentUser && currentUser.employeeId) {
+    if (!id) return null;
+    if (!personalStore[id]) {
+      personalStore[id] = {
+        biodata:{},spouse:{},parents:{},children:[],dependents:[],
+        education:[],jobs:[],training:[],awards:[],organizations:[],
+        documents:[],requests:[],audit:[],photo:""
+      };
+    }
+    return personalStore[id];
+  }
+  function employeeFor(id = currentUser && currentUser.employeeId) {
+    return employees.find(employee => employee.id === id) || null;
+  }
+  function biodataFor(id = currentUser && currentUser.employeeId) {
+    const employee = employeeFor(id) || {};
+    const record = recordFor(id);
+    return {
+      fullName:employee.name || "",
+      nip:employee.nip || "",
+      pppkNumber:employee.id || "",
+      emailWork:employee.email || "",
+      phone:employee.phone || "",
+      category:employee.type || "",
+      position:employee.position || "",
+      unit:employee.unit || "",
+      startDate:employee.start || "",
+      endDate:employee.end || "",
+      employmentStatus:employee.status || "",
+      ...(record ? record.biodata : {})
+    };
+  }
+  function masked(value) {
+    const text = String(value || "");
+    if (!text) return NOT_FILLED;
+    if (text.length <= 4) return "••••";
+    return `${"•".repeat(Math.min(12,text.length-4))}${text.slice(-4)}`;
+  }
+  function displayValue(value) { return value ? h(value) : NOT_FILLED; }
+  function baseFields() {
+    return [
+      {label:"NIP",value:biodataFor().nip},
+      {label:"Nomor Induk PPPK",value:biodataFor().pppkNumber},
+      {label:"Jenis pegawai",value:biodataFor().category},
+      {label:"Status kepegawaian",value:biodataFor().employmentStatus},
+      {label:"Jabatan",value:biodataFor().position},
+      {label:"Unit kerja",value:biodataFor().unit},
+      {label:"Mulai bekerja",value:biodataFor().startDate ? formatDate(biodataFor().startDate) : ""},
+      {label:"Masa kontrak",value:biodataFor().endDate ? `Sampai ${formatDate(biodataFor().endDate)}` : ""}
+    ];
+  }
+  function fieldMarkup(field, value = "") {
+    const type = field.type || "text";
+    const required = field.required ? "required" : "";
+    if (type === "select") {
+      const options = (field.options || []).map(option =>{
+        const selected = field.name==="frontTitle"
+          ? normalizeFrontTitle(value)===normalizeFrontTitle(option)
+          : String(value)===option;
+        return `<option value="${h(option)}" ${selected?"selected":""}>${h(option)}</option>`;
+      }).join("");
+      return `<div class="field"><label for="p-${h(field.name)}">${h(field.label)}${field.required?" *":""}</label><select id="p-${h(field.name)}" name="${h(field.name)}" ${required}><option value="">Pilih...</option>${options}</select></div>`;
+    }
+    if (type === "textarea") return `<div class="field"><label for="p-${h(field.name)}">${h(field.label)}${field.required?" *":""}</label><textarea id="p-${h(field.name)}" name="${h(field.name)}" ${required}>${h(value)}</textarea></div>`;
+    const nameFormat = field.nameFormat ? 'data-name-format="true"' : "";
+    const backTitleFormat = field.name==="backTitle" ? 'data-back-title-format="true"' : "";
+    return `<div class="field"><label for="p-${h(field.name)}">${h(field.label)}${field.required?" *":""}</label><input id="p-${h(field.name)}" name="${h(field.name)}" type="${h(type)}" value="${h(value)}" ${nameFormat} ${backTitleFormat} ${required}></div>`;
+  }
+  function openForm(title, fields, values, onSave, submitLabel = "Simpan") {
+    const host = document.getElementById("modalHost");
+    host.innerHTML = `<div class="modal-backdrop" id="personalModalBackdrop"><form class="modal" id="personalForm"><div class="modal-head"><div><h2>${h(title)}</h2><p>Perubahan hanya tersimpan di browser demo ini.</p></div><button type="button" class="close-button" data-personal-close aria-label="Tutup">×</button></div><div class="modal-body"><div class="form-grid">${fields.map(field=>fieldMarkup(field,values[field.name] || "")).join("")}</div></div><div class="modal-foot"><button type="button" class="btn btn-light" data-personal-close>Batal</button><button type="submit" class="btn btn-primary">${h(submitLabel)}</button></div></form></div>`;
+    host.querySelectorAll("[data-personal-close]").forEach(button => button.addEventListener("click", closeModal));
+    host.querySelector("#personalModalBackdrop").addEventListener("click", event => { if (event.target.id === "personalModalBackdrop") closeModal(); });
+    host.querySelectorAll("[data-name-format]").forEach(input=>{
+      input.setAttribute("data-uppercase-bold","true");
+      input.addEventListener("input",()=>{input.value=input.value.toUpperCase();});
+    });
+    host.querySelectorAll("[data-name-format]").forEach(input=>input.addEventListener("blur",()=>{input.value=normalizeName(input.value);}));
+    host.querySelectorAll("[data-back-title-format]").forEach(input=>input.addEventListener("blur",()=>{input.value=normalizeBackTitle(input.value);}));
+    host.querySelector("#personalForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const values = Object.fromEntries(new FormData(event.currentTarget).entries());
+      if (values.fullName) values.fullName=normalizeName(values.fullName);
+      if (values.backTitle) values.backTitle=normalizeBackTitle(values.backTitle);
+      if (onSave(values) !== false) closeModal();
+    });
+  }
+  function closeModal() { document.getElementById("modalHost").innerHTML = ""; }
+  function infoGrid(fields) {
+    return `<div class="info-grid">${fields.map(field=>`<div class="info-item"><small>${h(field.label)}</small><strong>${field.mask ? masked(field.value) : displayValue(field.value)}</strong></div>`).join("")}</div>`;
+  }
+  function completion(fields) {
+    const total = fields.length || 1;
+    const completed = fields.filter(value=>String(value || "").trim()).length;
+    return Math.round(completed / total * 100);
+  }
+  function completionCard(label, value) {
+    return `<div class="completion-card"><div class="completion-card-head"><span>${h(label)}</span><strong>${value}%</strong></div><div class="progress"><i style="width:${value}%"></i></div></div>`;
+  }
+  function profilePhotoMarkup(record, profile) {
+    const image = record.photo && /^data:image\/(jpeg|png);base64,[A-Za-z0-9+/=]+$/.test(record.photo);
+    return `<div class="profile-photo">${image?`<img src="${record.photo}" alt="Foto profil">`:h(initials(profile.fullName))}</div>`;
+  }
+  function personalDashboardTemplate() {
+    const record = recordFor();
+    const profile = biodataFor();
+    const personalFields = ["nik","birthPlace","birthDate","gender","religion","addressKtp","phone","emailPersonal"].map(key=>profile[key]);
+    const familyDone = profile.maritalStatus === "Belum Kawin"
+      ? Boolean(record.parents.fatherName || record.parents.motherName)
+      : Boolean(record.spouse.name);
+    const requiredDocumentCategories=["Identitas pribadi","Kartu Keluarga","Ijazah pribadi","SK kepegawaian","Dokumen PPPK"];
+    const values = [
+      completion(personalFields),
+      completion(requiredDocumentCategories.map(category=>record.documents.some(doc=>doc.category===category))),
+      familyDone ? 100 : 0,
+      record.education.length ? 100 : 0,
+      completion([profile.category,profile.position,profile.unit,profile.startDate,profile.endDate])
+    ];
+    const labels = ["Data pribadi","Dokumen pribadi","Data keluarga","Riwayat pendidikan","Administrasi kepegawaian"];
+    const pending = record.requests.filter(request=>request.status==="Menunggu verifikasi").length;
+    const notifications = [];
+    if (values[0] < 100) notifications.push("Lengkapi biodata agar informasi pribadi lebih lengkap.");
+    if (!record.documents.length) notifications.push("Belum ada dokumen pribadi yang diunggah.");
+    if (pending) notifications.push(`${pending} pengajuan perubahan menunggu verifikasi admin.`);
+    const status = profile.employmentStatus || "Belum tersedia";
+    const completionAverage = Math.round(values.reduce((sum,value)=>sum+value,0)/values.length);
+    const details = baseFields();
+    const maskedIdentity = masked(profile.nik);
+    return `<div class="page-heading"><div><h1>Dashboard Personal Pegawai</h1><p>E-Personal · Satu pegawai, satu profil digital · <span id="todayLabel"></span></p></div><div class="heading-actions"><button class="btn btn-outline" data-personal-action="print-drh">▤ Cetak DRH</button><button class="btn btn-primary" data-page-link="employees">Lengkapi data saya →</button></div></div>
+      <div class="security-banner">Mode demo statis: data tersimpan di browser ini saja dan tidak dilindungi server. Jangan masukkan NIK, rekening, data keluarga, atau dokumen nyata.</div>
+      <section class="profile-banner">${profilePhotoMarkup(record,profile)}<div style="min-width:0;flex:1"><h2 class="formatted-person-name">${h(formatFullName(profile) || currentUser.name)}</h2><p>${h(profile.position || "Jabatan belum dilengkapi")} · ${h(profile.unit || "Unit kerja belum dilengkapi")}<br>NIP ${h(profile.nip || "—")} · NIK ${h(maskedIdentity)}</p><span class="badge">${h(status)} · ${h(profile.category || "PPPK")}</span></div><button class="btn btn-outline" data-personal-action="change-photo">Foto profil</button></section>
+      <section class="stats">
+        <article class="card stat-card"><div class="stat-top"><span>Kelengkapan profil</span><i class="stat-icon">✓</i></div><div class="stat-value" data-personal-count="${completionAverage}">0</div><div class="stat-caption">Persentase kelengkapan data Anda</div></article>
+        <article class="card stat-card"><div class="stat-top"><span>Status kepegawaian</span><i class="stat-icon">✚</i></div><div class="stat-value" style="font-size:20px">${h(status)}</div><div class="stat-caption">${h(profile.category || "Kategori belum tersedia")}</div></article>
+        <article class="card stat-card"><div class="stat-top"><span>Dokumen tersimpan</span><i class="stat-icon">▤</i></div><div class="stat-value">${record.documents.length}</div><div class="stat-caption">Arsip lokal pada browser ini</div></article>
+        <article class="card stat-card"><div class="stat-top"><span>Pengajuan menunggu</span><i class="stat-icon">◷</i></div><div class="stat-value">${pending}</div><div class="stat-caption">Perubahan menunggu pemeriksaan</div></article>
+      </section>
+      <section class="personal-grid">
+        <article class="card panel"><div class="panel-head"><div><h2>Kelengkapan data</h2><p>Progress profil personal Anda</p></div><strong style="color:var(--blue)">${completionAverage}%</strong></div><div class="completion-grid">${labels.map((label,index)=>completionCard(label,values[index])).join("")}</div></article>
+        <article class="card panel"><div class="panel-head"><div><h2>Informasi kepegawaian</h2><p>Data PPPK yang ditautkan pada akun demo</p></div><button class="text-button" data-page-link="employees">Lihat profil →</button></div>${infoGrid(details)}</article>
+      </section>
+      <section class="personal-grid">
+        <article class="card panel"><div class="panel-head"><div><h2>Notifikasi & pengingat</h2><p>Hal yang dapat Anda lengkapi</p></div></div><div class="notice-list">${notifications.length?notifications.map(item=>`<div class="notice-item">${h(item)}</div>`).join(""):`<div class="empty">Tidak ada pengingat saat ini.</div>`}</div></article>
+        <article class="card panel"><div class="panel-head"><div><h2>Akses cepat</h2><p>Kelola profil pribadi</p></div></div><div class="contract-list"><button class="btn btn-outline w-full" data-page-link="employees">♙ Biodata pribadi</button><button class="btn btn-outline w-full" data-page-link="history">⌁ Riwayat hidup</button><button class="btn btn-outline w-full" data-page-link="family">♡ Data keluarga & KP4</button><button class="btn btn-outline w-full" data-page-link="documents">▤ Dokumen pribadi</button></div></article>
+      </section><input id="personalPhotoInput" type="file" accept="image/jpeg,image/png" class="hidden">`;
+  }
+  function profileTemplate() {
+    const profile = biodataFor();
+    const privateKeys = new Set(["nik","kkNumber","npwp","bpjsHealth","bpjsEmployment","taspen","bankAccount"]);
+    const fields = biodataFields.map(field=>({label:field.label,value:field.name==="fullName"?formatFullName(profile):(field.name==="frontTitle"?normalizeFrontTitle(profile.frontTitle):(field.name==="backTitle"?normalizeBackTitle(profile.backTitle):profile[field.name])),mask:privateKeys.has(field.name)}));
+    const details = baseFields();
+    return `<div class="page-heading"><div><h1>Biodata Pribadi</h1><p>Profil digital pegawai yang ditautkan pada akun Anda.</p></div><div class="heading-actions"><button class="btn btn-outline" data-personal-action="print-biodata">▤ Cetak biodata</button><button class="btn btn-primary" data-personal-action="edit-biodata">Ajukan perubahan</button></div></div>
+      <div class="security-banner">NIK, nomor keluarga, pajak, dan rekening ditampilkan tersamarkan. Pengajuan perubahan baru diterapkan setelah disetujui admin (simulasi lokal).</div>
+      <article class="card panel"><div class="panel-head"><div><h2>Informasi kepegawaian</h2><p>Status dan penempatan</p></div></div>${infoGrid(details)}</article>
+      <article class="card panel" style="margin-top:16px"><div class="panel-head"><div><h2>Identitas & kontak</h2><p>Daftar riwayat hidup pribadi</p></div></div>${infoGrid(fields)}</article>`;
+  }
+  function historyRows(kind, rows) {
+    const definition = historyTypes[kind];
+    const sorted = [...rows].sort((a,b)=>String(b.graduateYear||b.year||b.startYear||b.date||b.startDate||"").localeCompare(String(a.graduateYear||a.year||a.startYear||a.date||a.startDate||"")));
+    if (!sorted.length) return `<div class="empty">Belum ada riwayat ${h(definition.label.toLowerCase())}.</div>`;
+    return `<div class="record-list">${sorted.map(item=>{
+      const main = item.institution || item.name || item.level || definition.label;
+      const sub = [item.level,item.major,item.position,item.unit,item.provider,item.year||item.graduateYear||item.startYear,item.startDate?formatDate(item.startDate):"",item.endDate?formatDate(item.endDate):""].filter(Boolean).join(" · ");
+      return `<div class="record-card"><div><h3>${h(main)}</h3><p>${h(sub || "Detail belum dilengkapi")}</p>${item.description?`<p>${h(item.description)}</p>`:""}</div><div class="record-actions"><button data-record-edit="${h(kind)}" data-record-id="${h(item.id)}">Edit</button><button data-record-delete="${h(kind)}" data-record-id="${h(item.id)}">Hapus</button></div></div>`;
+    }).join("")}</div>`;
+  }
+  function historyTemplate() {
+    const record = recordFor();
+    return `<div class="page-heading"><div><h1>Daftar Riwayat Hidup</h1><p>Pendidikan, pekerjaan, pelatihan, penghargaan, dan organisasi.</p></div><div class="heading-actions"><button class="btn btn-outline" data-personal-action="print-drh">▤ Cetak / PDF DRH</button></div></div>
+      <div class="security-banner">Riwayat disimpan secara lokal pada browser demo. Lampiran digital dapat ditambahkan dari menu Dokumen Saya.</div>
+      ${Object.entries(historyTypes).map(([kind,definition])=>`<section class="card panel" style="margin-bottom:15px"><div class="panel-head"><div><h2>${h(definition.label)}</h2><p>Urut otomatis berdasarkan tahun/tanggal terbaru</p></div><button class="btn btn-primary" data-personal-action="record-add" data-kind="${h(kind)}">＋ Tambah</button></div>${historyRows(kind,record[kind])}</section>`).join("")}`;
+  }
+  const spouseFields = [
+    {name:"name",label:"Nama lengkap pasangan"},
+    {name:"nik",label:"NIK pasangan"},
+    {name:"birthPlace",label:"Tempat lahir"},
+    {name:"birthDate",label:"Tanggal lahir",type:"date"},
+    {name:"gender",label:"Jenis kelamin",type:"select",options:["Laki-laki","Perempuan"]},
+    {name:"religion",label:"Agama"},
+    {name:"education",label:"Pendidikan terakhir"},
+    {name:"occupation",label:"Pekerjaan"},
+    {name:"workplace",label:"Instansi tempat bekerja"},
+    {name:"address",label:"Alamat",type:"textarea"},
+    {name:"phone",label:"Nomor HP",type:"tel"},
+    {name:"marriageDate",label:"Tanggal perkawinan",type:"date"},
+    {name:"marriageDocumentNumber",label:"Nomor buku/akta perkawinan"}
+  ];
+  const parentFields = [
+    {name:"fatherName",label:"Nama ayah"},
+    {name:"fatherNik",label:"NIK ayah"},
+    {name:"fatherBirth",label:"Tempat/tanggal lahir ayah"},
+    {name:"fatherOccupation",label:"Pekerjaan ayah"},
+    {name:"motherName",label:"Nama ibu"},
+    {name:"motherNik",label:"NIK ibu"},
+    {name:"motherBirth",label:"Tempat/tanggal lahir ibu"},
+    {name:"motherOccupation",label:"Pekerjaan ibu"},
+    {name:"address",label:"Alamat orang tua",type:"textarea"},
+    {name:"phone",label:"Nomor kontak",type:"tel"}
+  ];
+  const childFields = [
+    {name:"name",label:"Nama lengkap anak",required:true},
+    {name:"nik",label:"NIK anak"},
+    {name:"kkNumber",label:"Nomor Kartu Keluarga"},
+    {name:"birthPlace",label:"Tempat lahir"},
+    {name:"birthDate",label:"Tanggal lahir",type:"date"},
+    {name:"gender",label:"Jenis kelamin",type:"select",options:["Laki-laki","Perempuan"]},
+    {name:"birthOrder",label:"Anak ke-",type:"number"},
+    {name:"educationStatus",label:"Status pendidikan"},
+    {name:"school",label:"Nama sekolah"},
+    {name:"level",label:"Jenjang pendidikan"},
+    {name:"dependentStatus",label:"Status tanggungan",type:"select",options:["Ya","Tidak"]},
+    {name:"notes",label:"Keterangan",type:"textarea"}
+  ];
+  const dependentFields = [
+    {name:"name",label:"Nama anggota keluarga",required:true},
+    {name:"relationship",label:"Hubungan keluarga"},
+    {name:"birthDate",label:"Tanggal lahir",type:"date"},
+    {name:"status",label:"Status tanggungan",type:"select",options:["Ya","Tidak"]},
+    {name:"notes",label:"Keterangan",type:"textarea"}
+  ];
+  function familyObjectCard(title, object, fields, action) {
+    const rows = fields.slice(0,6).map(field=>({label:field.label,value:object[field.name],mask:/nik/i.test(field.name)}));
+    return `<article class="card panel"><div class="panel-head"><div><h2>${h(title)}</h2><p>Data pribadi keluarga</p></div><button class="btn btn-outline" data-personal-action="${h(action)}">Edit</button></div>${infoGrid(rows)}</article>`;
+  }
+  function familyList(title, kind, items, primaryKey, secondaryKeys) {
+    const body = items.length ? `<div class="record-list">${items.map(item=>`<div class="record-card"><div><h3>${h(item[primaryKey]||"Anggota keluarga")}</h3><p>${h(secondaryKeys.map(key=>item[key]).filter(Boolean).join(" · ")||"Detail belum dilengkapi")}</p></div><div class="record-actions"><button data-family-edit="${h(kind)}" data-record-id="${h(item.id)}">Edit</button><button data-family-delete="${h(kind)}" data-record-id="${h(item.id)}">Hapus</button></div></div>`).join("")}</div>`:`<div class="empty">Belum ada data ${h(title.toLowerCase())}.</div>`;
+    return `<section class="card panel"><div class="panel-head"><div><h2>${h(title)}</h2><p>Data hanya ditampilkan pada akun pegawai terkait.</p></div><button class="btn btn-primary" data-personal-action="family-add" data-kind="${h(kind)}">＋ Tambah</button></div>${body}</section>`;
+  }
+  function familyTemplate() {
+    const record = recordFor();
+    return `<div class="page-heading"><div><h1>Data Keluarga & KP4</h1><p>Kelola data pasangan, anak, orang tua, dan tanggungan.</p></div><div class="heading-actions"><button class="btn btn-primary" data-personal-action="print-kp4">▤ Preview / Cetak KP4</button></div></div>
+      <div class="security-banner">Informasi keluarga adalah contoh dan tersimpan di browser ini saja. Jangan masukkan data anak atau dokumen keluarga yang sebenarnya.</div>
+      <section class="personal-grid">${familyObjectCard("Suami/Istri",record.spouse,spouseFields,"edit-spouse")}${familyObjectCard("Data Orang Tua",record.parents,parentFields,"edit-parents")}</section>
+      ${familyList("Data Anak","children",record.children,"name",["birthDate","school","dependentStatus"])}
+      <div style="height:14px"></div>${familyList("Data Tanggungan","dependents",record.dependents,"name",["relationship","status","birthDate"])}
+      <div class="card panel" style="margin-top:15px"><div class="panel-head"><div><h2>KP4</h2><p>Generate ringkasan KP4 dari data keluarga tersimpan.</p></div><button class="btn btn-outline" data-personal-action="print-kp4">Generate / Cetak</button></div><p class="crumb">Hasil cetak dapat disimpan sebagai PDF melalui dialog cetak browser. Format ini contoh dan perlu disesuaikan dengan formulir resmi instansi.</p></div>`;
+  }
+  function historyPrintSection(title, items, getText) {
+    return `<h2>${h(title)}</h2>${items.length?`<ul>${items.map(item=>`<li>${h(getText(item))}</li>`).join("")}</ul>`:"<p>Belum ada data.</p>"}`;
+  }
+  function printDocument(title, body) {
+    const host = document.getElementById("modalHost");
+    host.innerHTML = `<div class="modal-backdrop" id="printPreviewBackdrop"><section class="modal print-preview-modal" id="printPreviewModal" role="dialog" aria-modal="true" aria-label="Preview ${h(title)}"><div class="modal-head"><div><h2>Preview cetak</h2><p>${h(title)} · Pratinjau sebelum mencetak atau menyimpan PDF.</p></div><button type="button" class="close-button" data-print-close aria-label="Tutup">×</button></div><div class="modal-body"><main class="print-frame"><h1>${h(title)}</h1><p>RSUD Talaud · ${h(new Date().toLocaleDateString("id-ID"))}</p>${body}</main></div><div class="modal-foot"><button type="button" class="btn btn-light" data-print-close>Tutup</button><button type="button" class="btn btn-primary" id="printPreviewButton">▤ Cetak / Simpan PDF</button></div></section></div>`;
+    host.querySelectorAll("[data-print-close]").forEach(button=>button.addEventListener("click",closeModal));
+    host.querySelector("#printPreviewBackdrop").addEventListener("click",event=>{if(event.target.id==="printPreviewBackdrop")closeModal();});
+    host.querySelector("#printPreviewButton").addEventListener("click",()=>window.print());
+  }
+  function biodataPrintMarkup() {
+    const profile = biodataFor();
+    const pairs = biodataFields.map(field=>`<tr><th>${h(field.label)}</th><td>${h(profile[field.name] || "-")}</td></tr>`).join("");
+    const employment = baseFields().map(field=>`<tr><th>${h(field.label)}</th><td>${h(field.value || "-")}</td></tr>`).join("");
+    return `<h2>Identitas Pribadi</h2><table>${pairs}</table><h2>Kepegawaian</h2><table>${employment}</table>`;
+  }
+  function printBiodata() { printDocument("Biodata Pegawai",biodataPrintMarkup()); }
+  function printDrh() {
+    const record = recordFor();
+    const profile = biodataFor();
+    const sections = `<h2>A. Identitas diri</h2><table>${biodataFields.map(field=>`<tr><th>${h(field.label)}</th><td>${h(profile[field.name]||"-")}</td></tr>`).join("")}</table>`
+      + historyPrintSection("B. Pendidikan formal",record.education,item=>[item.level,item.institution,item.major,item.graduateYear].filter(Boolean).join(" · "))
+      + historyPrintSection("C. Riwayat pekerjaan",record.jobs,item=>[item.institution,item.position,item.startDate,item.endDate].filter(Boolean).join(" · "))
+      + historyPrintSection("D. Pelatihan dan sertifikasi",record.training,item=>[item.name,item.provider,item.date].filter(Boolean).join(" · "))
+      + historyPrintSection("E. Penghargaan",record.awards,item=>[item.name,item.issuer,item.year].filter(Boolean).join(" · "))
+      + historyPrintSection("F. Organisasi",record.organizations,item=>[item.name,item.position,item.startYear,item.endYear].filter(Boolean).join(" · "));
+    printDocument("Daftar Riwayat Hidup",sections);
+  }
+  function printKp4() {
+    const record = recordFor();
+    const profile = biodataFor();
+    const rows = (items,primary,secondary)=>items.map(item=>`<tr><td>${h(item[primary]||"-")}</td><td>${h(item[secondary]||"-")}</td></tr>`).join("")||`<tr><td colspan="2">Belum ada data.</td></tr>`;
+    const familyRows = `<h2>Identitas Pegawai</h2><table><tr><th>Nama</th><td class="formatted-person-name">${h(formatFullName(profile)||"-")}</td></tr><tr><th>NIP</th><td>${h(profile.nip||"-")}</td></tr><tr><th>Alamat</th><td>${h(profile.addressDomicile||profile.addressKtp||"-")}</td></tr></table>
+      <h2>Pasangan</h2><table><tr><th>Nama</th><td>${h(record.spouse.name||"-")}</td></tr><tr><th>NIK</th><td>${h(masked(record.spouse.nik))}</td></tr><tr><th>Pekerjaan</th><td>${h(record.spouse.occupation||"-")}</td></tr></table>
+      <h2>Anak</h2><table><tr><th>Nama anak</th><th>Status pendidikan/tanggungan</th></tr>${rows(record.children,"name","educationStatus")}</table>
+      <h2>Tanggungan keluarga</h2><table><tr><th>Nama</th><th>Hubungan</th></tr>${rows(record.dependents,"name","relationship")}</table>
+      <p>Dokumen ini merupakan preview demo dan wajib diperiksa serta disesuaikan dengan formulir resmi instansi sebelum digunakan.</p><div class="signature"><span>Pegawai,<br><br><br><strong class="formatted-person-name">${h(formatFullName(profile)||"")}</strong></span><span>Mengetahui,<br><br><br>Pejabat berwenang</span></div>`;
+    printDocument("Formulir KP4 - Preview Demo",familyRows);
+  }
+  function documentsTemplate() {
+    const record = recordFor();
+    const bytes = record.documents.reduce((sum,doc)=>sum+(Number(doc.size)||0),0);
+    const rows = record.documents;
+    return `<div class="page-heading"><div><h1>Dokumen Pribadi Digital</h1><p>Arsip pribadi Anda, dikelompokkan menurut kategori.</p></div><div class="heading-actions"><button class="btn btn-primary" data-personal-action="upload-document">↑ Upload dokumen</button></div></div>
+      <div class="security-banner">Setiap file disimpan sebagai data lokal pada browser demo dengan batas 1 MB per file. Gambar dikompresi otomatis. Ini bukan private storage. Jangan unggah dokumen nyata.</div>
+      <div class="card panel"><div class="table-tools" style="padding:0 0 15px;border:0"><input class="search" id="personalDocumentSearch" placeholder="Cari nama atau kategori dokumen..." aria-label="Cari dokumen"><span class="crumb">${rows.length} dokumen · ${(bytes/1024/1024).toFixed(2)} MB</span></div><div id="personalDocumentList">${documentRows(rows)}</div></div>
+      <input id="personalDocumentInput" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="hidden">`;
+  }
+  function documentRows(rows) {
+    if (!rows.length) return `<div class="empty">Belum ada dokumen. Gunakan “Upload dokumen” untuk menambah berkas demo.</div>`;
+    return rows.map(doc=>{
+      const url = safeDataUrl(doc.dataUrl);
+      return `<div class="document-row"><div class="document-mark">${doc.type==="application/pdf"?"PDF":"IMG"}</div><div class="document-meta"><strong>${h(doc.name)}</strong><small>${h(doc.category)} · ${formatDate(doc.uploadedAt)} · <span class="badge status-pending">${h(doc.status||"Menunggu verifikasi")}</span></small></div><div class="record-actions">${url?`<a class="btn btn-light" style="min-height:30px;font-size:10px" href="${url}" target="_blank" rel="noopener">Preview</a><a class="btn btn-light" style="min-height:30px;font-size:10px" href="${url}" download="${h(doc.name)}">Download</a>`:""}<button data-document-edit="${h(doc.id)}">Ganti</button><button data-document-delete="${h(doc.id)}">Hapus</button></div></div>`;
+    }).join("");
+  }
+  function safeDataUrl(value) {
+    return /^data:(application\/pdf|image\/jpeg|image\/png);base64,[A-Za-z0-9+/=]+$/.test(value||"") ? value : "";
+  }
+  async function compressImage(file, maxBytes) {
+    const sourceUrl = await readAsDataUrl(file);
+    const image = await new Promise((resolve,reject)=>{
+      const img = new Image();
+      img.onload = ()=>resolve(img);
+      img.onerror = ()=>reject(new Error("Gambar tidak dapat dibaca."));
+      img.src = sourceUrl;
+    });
+    let quality = 0.86;
+    let scale = 1;
+    let blob = null;
+    for (let attempt=0; attempt<12; attempt++) {
+      const width = Math.max(1,Math.round(image.naturalWidth*scale));
+      const height = Math.max(1,Math.round(image.naturalHeight*scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext("2d",{alpha:false});
+      context.fillStyle="#fff";
+      context.fillRect(0,0,width,height);
+      context.drawImage(image,0,0,width,height);
+      blob = await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",quality));
+      if (!blob) throw new Error("Gambar tidak dapat dikompresi.");
+      if (blob.size <= maxBytes || (quality <= 0.4 && scale <= 0.45)) break;
+      if (quality > 0.42) quality -= 0.1;
+      else scale *= 0.82;
+    }
+    const dataUrl = await readAsDataUrl(blob);
+    return {dataUrl,type:"image/jpeg",size:blob.size};
+  }
+  async function compressPdf(file, maxBytes) {
+    if (!window.pdfjsLib || !window.jspdf) throw new Error("Library kompresi PDF belum tersedia.");
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    const source = await readAsDataUrl(file);
+    const bytes = Uint8Array.from(atob(source.split(",")[1]),character=>character.charCodeAt(0));
+    const pdf = await window.pdfjsLib.getDocument({data:bytes}).promise;
+    const {jsPDF}=window.jspdf;
+    let scale = 1.25;
+    let quality = 0.72;
+    let output = null;
+    for (let attempt=0; attempt<8; attempt++) {
+      const pageCount = pdf.numPages;
+      let documentPdf = null;
+      for (let pageNumber=1; pageNumber<=pageCount; pageNumber++) {
+        const page = await pdf.getPage(pageNumber);
+        const viewport = page.getViewport({scale});
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(viewport.width);
+        canvas.height = Math.round(viewport.height);
+        await page.render({canvasContext:canvas.getContext("2d"),viewport}).promise;
+        const image = canvas.toDataURL("image/jpeg",quality);
+        const imageWidth = viewport.width * 0.264583;
+        const imageHeight = viewport.height * 0.264583;
+        if (!documentPdf) documentPdf = new jsPDF({orientation:imageWidth>=imageHeight?"landscape":"portrait",unit:"mm",format:[imageWidth,imageHeight],compress:true});
+        else documentPdf.addPage([imageWidth,imageHeight],imageWidth>=imageHeight?"landscape":"portrait");
+        documentPdf.addImage(image,"JPEG",0,0,imageWidth,imageHeight,undefined,"FAST");
+      }
+      output = documentPdf.output("blob");
+      if (output.size <= maxBytes || (scale <= 0.55 && quality <= 0.42)) break;
+      quality = Math.max(0.42,quality-0.1);
+      scale = Math.max(0.55,scale*0.82);
+    }
+    const dataUrl = await readAsDataUrl(output);
+    return {dataUrl,type:"application/pdf",size:output.size};
+  }
+  function openDocumentForm(id = "") {
+    const record = recordFor();
+    const existing = record.documents.find(doc=>doc.id===id);
+    const host = document.getElementById("modalHost");
+    const options = documentCategories.map(category=>`<option ${existing&&existing.category===category?"selected":""}>${h(category)}</option>`).join("");
+    host.innerHTML = `<div class="modal-backdrop" id="documentBackdrop"><form class="modal" id="documentForm"><div class="modal-head"><div><h2>${existing?"Ganti dokumen":"Upload dokumen"}</h2><p>PDF, JPG, JPEG, atau PNG · setiap file maksimal 1 MB. Gambar dikompresi otomatis.</p></div><button type="button" class="close-button" data-personal-close aria-label="Tutup">×</button></div><div class="modal-body"><div class="field"><label for="doc-name">Nama dokumen</label><input id="doc-name" name="name" required value="${h(existing?existing.name:"")}"></div><div class="field"><label for="doc-category">Kategori</label><select id="doc-category" name="category">${options}</select></div><div class="field"><label for="doc-file">Berkas ${existing?"(opsional untuk mengganti file)":"*"}</label><input id="doc-file" name="file" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" ${existing?"":"required"}></div></div><div class="modal-foot"><button type="button" class="btn btn-light" data-personal-close>Batal</button><button type="submit" class="btn btn-primary">${existing?"Simpan perubahan":"Upload"}</button></div></form></div>`;
+    host.querySelectorAll("[data-personal-close]").forEach(button=>button.addEventListener("click",closeModal));
+    host.querySelector("#documentBackdrop").addEventListener("click",event=>{if(event.target.id==="documentBackdrop")closeModal();});
+    host.querySelector("#documentForm").addEventListener("submit",async event=>{
+      event.preventDefault();
+      const form = event.currentTarget;
+      const file = form.elements.file.files[0];
+      const name = form.elements.name.value.trim();
+      const category = form.elements.category.value;
+      if (file && !["application/pdf","image/jpeg","image/png"].includes(file.type)) { notify("Format file harus PDF, JPG, JPEG, atau PNG.",true); return; }
+      const oldSize = existing ? Number(existing.size)||0 : 0;
+      let dataUrl = existing ? existing.dataUrl : "";
+      let type = existing ? existing.type : "";
+      let size = existing ? oldSize : 0;
+      if (file) {
+        try {
+          if (file.type.startsWith("image/")) {
+            const compressed = await compressImage(file,MAX_FILE_BYTES);
+            dataUrl = compressed.dataUrl;
+            type = compressed.type;
+            size = compressed.size;
+            if (file.size > MAX_FILE_BYTES && size < file.size) {
+              notify(`Gambar dikompresi otomatis dari ${(file.size/1024/1024).toFixed(2)} MB menjadi ${(size/1024/1024).toFixed(2)} MB.`);
+            }
+          } else {
+            const compressed = file.size > MAX_FILE_BYTES ? await compressPdf(file,MAX_FILE_BYTES) : {dataUrl:await readAsDataUrl(file),type:file.type,size:file.size};
+            dataUrl = compressed.dataUrl;
+            type = compressed.type;
+            size = compressed.size;
+            if (file.size > MAX_FILE_BYTES && size < file.size) {
+              notify(`PDF dikompresi otomatis dari ${(file.size/1024/1024).toFixed(2)} MB menjadi ${(size/1024/1024).toFixed(2)} MB.`);
+            }
+          }
+        }
+        catch (error) { notify("File gagal dibaca oleh browser.",true); return; }
+      }
+      if (size > MAX_FILE_BYTES) { notify("Ukuran hasil kompresi tetap melebihi 1 MB.",true); return; }
+      const entry = {id:existing?existing.id:`DOC-${Date.now()}`,name,category,type,size,dataUrl,uploadedAt:existing?existing.uploadedAt:new Date().toISOString().slice(0,10),status:existing?existing.status:"Menunggu verifikasi"};
+      if (existing) record.documents = record.documents.map(doc=>doc.id===id?entry:doc);
+      else record.documents.unshift(entry);
+      if (!persist()) return;
+      closeModal(); renderPage("documents"); notify(existing?"Dokumen berhasil diperbarui.":"Dokumen berhasil diunggah ke penyimpanan demo.");
+    });
+  }
+  function readAsDataUrl(file) {
+    return new Promise((resolve,reject)=>{
+      const reader = new FileReader();
+      reader.onload = ()=>resolve(String(reader.result||""));
+      reader.onerror = ()=>reject(reader.error||new Error("File tidak dapat dibaca."));
+      reader.readAsDataURL(file);
+    });
+  }
+  function renderDocumentsFilter() {
+    const search = (document.getElementById("personalDocumentSearch").value||"").toLowerCase();
+    const rows = recordFor().documents.filter(doc=>`${doc.name} ${doc.category}`.toLowerCase().includes(search));
+    document.getElementById("personalDocumentList").innerHTML = documentRows(rows);
+    bindDocumentActions();
+  }
+  function bindDocumentActions() {
+    document.querySelectorAll("[data-document-edit]").forEach(button=>button.addEventListener("click",()=>openDocumentForm(button.dataset.documentEdit)));
+    document.querySelectorAll("[data-document-delete]").forEach(button=>button.addEventListener("click",()=>{
+      const record=recordFor(); const id=button.dataset.documentDelete;
+      if(!confirm("Hapus dokumen ini dari penyimpanan demo?"))return;
+      record.documents=record.documents.filter(doc=>doc.id!==id);
+      if(persist()){renderPage("documents");notify("Dokumen dihapus.");}
+    }));
+  }
+  function requestsTemplate() {
+    const record = recordFor();
+    const options = biodataFields.map(field=>`<option value="${h(field.name)}">${h(field.label)}</option>`).join("");
+    const requests = record.requests.slice().reverse();
+    const requestSummary = request => {
+      if (!request.changes) return `${h(request.value)} · ${formatDate(request.createdAt)}<br>${h(request.reason||"")}`;
+      const details=Object.entries(request.changes).map(([key,value])=>`${(biodataFields.find(field=>field.name===key)||{}).label||key}: ${value}`).join(" · ");
+      return `${h(details)} · ${formatDate(request.createdAt)}`;
+    };
+    return `<div class="page-heading"><div><h1>Pengajuan Perubahan Data</h1><p>Ajukan perubahan biodata untuk diperiksa administrator.</p></div></div>
+      <div class="security-banner">Perubahan tidak langsung mengubah data profil. Admin demo perlu menyetujui pengajuan terlebih dahulu.</div>
+      <section class="personal-grid"><article class="card panel"><div class="panel-head"><div><h2>Buat pengajuan</h2><p>Pilih satu field yang ingin diperbarui</p></div></div>
+        <form id="personalRequestForm"><div class="request-change"><div class="field"><label for="requestField">Data yang diubah</label><select name="field" id="requestField" required>${options}</select></div><div class="field" id="requestValueField"><label for="requestValue">Nilai baru</label><input name="value" id="requestValue" required></div><div class="field"><label for="requestReason">Alasan/keterangan</label><textarea name="reason" id="requestReason" required></textarea></div></div><button class="btn btn-primary" type="submit">Kirim untuk verifikasi</button></form>
+      </article><article class="card panel"><div class="panel-head"><div><h2>Status pengajuan</h2><p>Riwayat pengajuan akun ini</p></div></div>${requests.length?`<div class="record-list">${requests.map(request=>`<div class="record-card"><div><h3>${h(request.changes?"Perubahan beberapa data":(biodataFields.find(field=>field.name===request.field)||{}).label||"Perubahan data")}</h3><p>${requestSummary(request)}</p></div><span class="badge ${request.status==="Disetujui"?"status-approved":request.status==="Ditolak"?"status-rejected":"status-pending"}">${h(request.status)}</span></div>`).join("")}</div>`:`<div class="empty">Belum ada pengajuan.</div>`}</article></section>`;
+  }
+  function reviewTemplate() {
+    const requests = [];
+    for (const [employeeId,record] of Object.entries(personalStore)) {
+      const employee=employeeFor(employeeId);
+      (record.requests||[]).forEach(request=>requests.push({employeeId,employeeName:employee?employee.name:employeeId,request}));
+    }
+    requests.sort((a,b)=>String(b.request.createdAt).localeCompare(String(a.request.createdAt)));
+    if (!requests.length) return `<div class="page-heading"><div><h1>Verifikasi Pengajuan</h1><p>Periksa perubahan data yang diajukan pegawai demo.</p></div></div><div class="card empty">Belum ada pengajuan perubahan.</div>`;
+    return `<div class="page-heading"><div><h1>Verifikasi Pengajuan</h1><p>Simulasi persetujuan perubahan biodata pegawai.</p></div></div><div class="security-banner">Admin demo dapat menyetujui/menolak. Ini bukan proses persetujuan resmi dan tidak menghasilkan audit server.</div>
+      <div class="record-list">${requests.map(({employeeId,employeeName,request})=>{
+        const changes=request.changes||{[request.field]:request.value};
+        const canReview=request.status==="Menunggu verifikasi";
+        const before=biodataFor(employeeId);
+        const proposed=Object.entries(changes).map(([key,value])=>`<div class="info-item"><small>${h((biodataFields.find(item=>item.name===key)||{}).label||key)}</small><strong>${h(before[key]||"—")} → ${h(value||"—")}</strong></div>`).join("");
+        return `<article class="card panel"><div class="panel-head"><div><h2>${h(employeeName)}</h2><p>Pengajuan perubahan · ${formatDate(request.createdAt)}</p></div><span class="badge ${request.status==="Disetujui"?"status-approved":request.status==="Ditolak"?"status-rejected":"status-pending"}">${h(request.status)}</span></div>
+          <div class="info-grid">${proposed}<div class="info-item"><small>Alasan</small><strong>${h(request.reason||"Pengajuan biodata")}</strong></div></div>
+          ${canReview?`<div class="heading-actions" style="margin-top:14px"><button class="btn btn-primary" data-request-decision="approve" data-employee-id="${h(employeeId)}" data-request-id="${h(request.id)}">Setujui & terapkan</button><button class="btn btn-outline" data-request-decision="reject" data-employee-id="${h(employeeId)}" data-request-id="${h(request.id)}">Tolak</button></div>`:""}</article>`;
+      }).join("")}</div>`;
+  }
+  function submitBiodataRequest(values) {
+    const record=recordFor(); const profile=biodataFor();
+    if(values.fullName) values.fullName=normalizeName(values.fullName);
+    if(values.backTitle) values.backTitle=normalizeBackTitle(values.backTitle);
+    const changes=Object.fromEntries(Object.entries(values).filter(([key,value])=>String(value)!==String(profile[key]||"")));
+    if(!Object.keys(changes).length){notify("Tidak ada perubahan biodata yang diajukan.");return false;}
+    record.requests.unshift({id:`REQ-${Date.now()}`,field:"multiple",value:`${Object.keys(changes).length} perubahan`,changes,oldValue:"",reason:"Pengajuan perubahan biodata",status:"Menunggu verifikasi",createdAt:new Date().toISOString().slice(0,10)});
+    if(!persist())return false;
+    renderPage("requests");notify("Pengajuan biodata dikirim untuk verifikasi.");return true;
+  }
+  function decideRequest(employeeId,requestId,decision) {
+    const record=recordFor(employeeId);
+    const request=record&&record.requests.find(item=>item.id===requestId);
+    if(!request||request.status!=="Menunggu verifikasi")return;
+    if(decision==="approve") {
+      const changes=request.changes||{[request.field]:request.value};
+      record.biodata={...record.biodata,...changes};
+      request.status="Disetujui";
+    } else request.status="Ditolak";
+    request.reviewedAt=new Date().toISOString();
+    record.audit.push({action:request.status,requestId,at:request.reviewedAt});
+    if(persist()){renderPage("review");notify(`Pengajuan ${request.status.toLowerCase()}.`);}
+  }
+  function openBiodataRequest() {
+    const values=biodataFor();
+    openForm("Ajukan perubahan biodata",biodataFields,values,submitBiodataRequest,"Kirim pengajuan");
+  }
+  function openHistoryForm(kind,id="") {
+    const record=recordFor();
+    const existing=record[kind].find(item=>item.id===id);
+    openForm(`${existing?"Edit":"Tambah"} ${historyTypes[kind].label.toLowerCase()}`,historyTypes[kind].fields,existing||{},values=>{
+      const item={...values,id:existing?existing.id:`${kind}-${Date.now()}`};
+      record[kind]=existing?record[kind].map(row=>row.id===id?item:row):[item,...record[kind]];
+      if(persist()){renderPage("history");notify("Riwayat tersimpan.");return true;}
+      return false;
+    });
+  }
+  function openFamilyForm(kind,id="") {
+    const record=recordFor();
+    if(kind==="spouse"||kind==="parents") {
+      const fields=kind==="spouse"?spouseFields:parentFields;
+      openForm(kind==="spouse"?"Data Suami/Istri":"Data Orang Tua",fields,record[kind],values=>{
+        record[kind]=values;
+        if(persist()){renderPage("family");notify("Data keluarga tersimpan.");return true;}
+        return false;
+      });
+      return;
+    }
+    const fields=kind==="children"?childFields:dependentFields;
+    const existing=record[kind].find(item=>item.id===id);
+    openForm(`${existing?"Edit":"Tambah"} ${kind==="children"?"data anak":"tanggungan"}`,fields,existing||{},values=>{
+      const item={...values,id:existing?existing.id:`${kind}-${Date.now()}`};
+      record[kind]=existing?record[kind].map(row=>row.id===id?item:row):[item,...record[kind]];
+      if(persist()){renderPage("family");notify("Data keluarga tersimpan.");return true;}
+      return false;
+    });
+  }
+  function deleteRecord(kind,id,page) {
+    const record=recordFor();
+    if(!confirm("Hapus data ini dari penyimpanan demo?"))return;
+    record[kind]=record[kind].filter(item=>item.id!==id);
+    if(persist()){renderPage(page);notify("Data dihapus.");}
+  }
+  function bind(page) {
+    document.querySelectorAll("[data-personal-action]").forEach(button=>button.addEventListener("click",()=>{
+      const action=button.dataset.personalAction;
+      if(action==="edit-biodata")openBiodataRequest();
+      if(action==="print-biodata")printBiodata();
+      if(action==="print-drh")printDrh();
+      if(action==="print-kp4")printKp4();
+      if(action==="record-add")openHistoryForm(button.dataset.kind);
+      if(action==="edit-spouse")openFamilyForm("spouse");
+      if(action==="edit-parents")openFamilyForm("parents");
+      if(action==="family-add")openFamilyForm(button.dataset.kind);
+      if(action==="upload-document")openDocumentForm();
+      if(action==="change-photo")document.getElementById("personalPhotoInput").click();
+    }));
+    document.querySelectorAll("[data-record-edit]").forEach(button=>button.addEventListener("click",()=>openHistoryForm(button.dataset.recordEdit,button.dataset.recordId)));
+    document.querySelectorAll("[data-record-delete]").forEach(button=>button.addEventListener("click",()=>deleteRecord(button.dataset.recordDelete,button.dataset.recordId,"history")));
+    document.querySelectorAll("[data-family-edit]").forEach(button=>button.addEventListener("click",()=>openFamilyForm(button.dataset.familyEdit,button.dataset.recordId)));
+    document.querySelectorAll("[data-family-delete]").forEach(button=>button.addEventListener("click",()=>deleteRecord(button.dataset.familyDelete,button.dataset.recordId,"family")));
+    document.querySelectorAll("[data-request-decision]").forEach(button=>button.addEventListener("click",()=>decideRequest(button.dataset.employeeId,button.dataset.requestId,button.dataset.requestDecision)));
+    if(page==="requests") {
+      const form=document.getElementById("personalRequestForm");
+      if(form) {
+        const fieldSelect=form.querySelector("#requestField");
+        const valueField=form.querySelector("#requestValueField");
+        const renderRequestValueField=()=>{
+          if(fieldSelect.value==="frontTitle"){
+            valueField.innerHTML=`<label for="requestValue">Gelar depan</label><select name="value" id="requestValue" required><option value="">Pilih gelar...</option>${["Dr","dr","Ns","Ir"].map(option=>`<option value="${h(option)}">${h(option)}</option>`).join("")}</select>`;
+          }else if(fieldSelect.value==="bankName"){
+            valueField.innerHTML=`<label for="requestValue">Nama bank</label><select name="value" id="requestValue" required><option value="">Pilih bank...</option>${bankOptions.map(option=>`<option value="${h(option)}">${h(option)}</option>`).join("")}</select>`;
+          }else{
+            const nameAttribute=fieldSelect.value==="fullName"?' data-name-format="true"':"";
+            const backTitleAttribute=fieldSelect.value==="backTitle"?' data-back-title-format="true"':"";
+            valueField.innerHTML=`<label for="requestValue">Nilai baru</label><input name="value" id="requestValue"${nameAttribute}${backTitleAttribute} required>`;
+          }
+        };
+        fieldSelect.addEventListener("change",renderRequestValueField);
+        renderRequestValueField();
+        valueField.addEventListener("input",event=>{
+          if(event.target.matches("[data-name-format],[data-back-title-format]")) event.target.value=event.target.value.toUpperCase();
+        },true);
+        valueField.addEventListener("blur",event=>{
+          if(event.target.matches("[data-name-format]")) event.target.value=normalizeName(event.target.value);
+          if(event.target.matches("[data-back-title-format]")) event.target.value=normalizeBackTitle(event.target.value);
+        },true);
+        form.addEventListener("submit",event=>{
+          event.preventDefault();
+          const values=Object.fromEntries(new FormData(form).entries());
+          if(values.field==="fullName") values.value=normalizeName(values.value);
+          if(values.field==="backTitle") values.value=normalizeBackTitle(values.value);
+          if(values.field==="frontTitle") values.value=normalizeFrontTitle(values.value);
+          const record=recordFor();
+          const oldValue=biodataFor()[values.field]||"";
+          record.requests.unshift({id:`REQ-${Date.now()}`,field:values.field,value:values.value,oldValue,reason:values.reason,status:"Menunggu verifikasi",createdAt:new Date().toISOString().slice(0,10)});
+          if(persist()){renderPage("requests");notify("Pengajuan dikirim untuk verifikasi.");}
+        });
+      }
+    }
+    if(page==="dashboard") {
+      document.querySelectorAll("[data-personal-count]").forEach(element=>{
+        const target=Number(element.dataset.personalCount);const start=performance.now();
+        const animate=now=>{const progress=Math.min(1,(now-start)/550);element.textContent=String(Math.round(target*progress));if(progress<1)requestAnimationFrame(animate);};
+        requestAnimationFrame(animate);
+      });
+      const input=document.getElementById("personalPhotoInput");
+      if(input)input.addEventListener("change",async()=>{
+        const file=input.files[0];if(!file)return;
+        if(!["image/jpeg","image/png"].includes(file.type)){notify("Foto harus JPG atau PNG.",true);input.value="";return;}
+        try{
+          const compressed=await compressImage(file,MAX_FILE_BYTES);
+          recordFor().photo=compressed.dataUrl;
+          if(persist()){renderPage("dashboard");notify(file.size>MAX_FILE_BYTES?"Foto profil dikompresi otomatis dan diperbarui.":"Foto profil diperbarui.");}
+        }
+        catch(error){notify("Foto gagal dibaca.",true);}
+      });
+    }
+    if(page==="documents") {
+      const search=document.getElementById("personalDocumentSearch");
+      if(search)search.addEventListener("input",renderDocumentsFilter);
+      bindDocumentActions();
+    }
+  }
+
+  function configureNavigation() {
+    const review=document.querySelector('#navigation [data-page="review"]');
+    if(review)review.lastChild.textContent=`Verifikasi Pengajuan (${pendingRequestCount()})`;
+  }
+  function pendingRequestCount() {
+    return Object.values(personalStore).reduce((sum,record)=>sum+(record.requests||[]).filter(request=>request.status==="Menunggu verifikasi").length,0);
+  }
+  function resetDemo() {
+    personalStore={};
+    try { localStorage.removeItem(STORE_KEY); return true; }
+    catch (error) { notify("Data E-Personal demo tidak dapat direset.",true); return false; }
+  }
+
+  window.Personal = {
+    configureNavigation,
+    dashboardTemplate:personalDashboardTemplate,
+    profileTemplate,
+    historyTemplate,
+    familyTemplate,
+    documentsTemplate,
+    requestsTemplate,
+    reviewTemplate,
+    bind,
+    resetDemo
+  };
+})();
+
+</script>
+  <script>
+    const STORAGE_KEY = "rsud-talaud-pppk-demo-v1";
+    const defaultEmployees = [
+      {id:"EMP-2024-001",name:"Maria T. Rondonuwu, S.Kep., Ns.",nip:"198705122024212001",type:"PPPK",position:"Perawat Ahli Pertama",unit:"Instalasi Rawat Inap",start:"2024-03-01",end:"2029-02-28",status:"Aktif",email:"maria.rondonuwu@rsudtalaud.go.id",phone:"0812-4400-1201"},
+      {id:"EMP-2024-002",name:"Yohanis M. Tatipang, A.Md.Kep.",nip:"199108252024211002",type:"PPPK",position:"Perawat Terampil",unit:"Instalasi Gawat Darurat",start:"2024-03-01",end:"2029-02-28",status:"Aktif",email:"yohanis.tatipang@rsudtalaud.go.id",phone:"0813-4400-1202"},
+      {id:"EMP-2024-003",name:"Claudia A. Sondakh, S.Farm.",nip:"199303182024212003",type:"PPPK",position:"Apoteker Ahli Pertama",unit:"Instalasi Farmasi",start:"2024-04-01",end:"2029-03-31",status:"Aktif",email:"claudia.sondakh@rsudtalaud.go.id",phone:"0812-4400-1203"},
+      {id:"EMP-2024-004",name:"Daniel P. Waworuntu, S.Kom.",nip:"198912072024211004",type:"PPPK Paruh Waktu",position:"Pranata Komputer",unit:"Subbagian Umum",start:"2024-07-01",end:"2026-06-30",status:"Aktif",email:"daniel.waworuntu@rsudtalaud.go.id",phone:"0821-4400-1204"},
+      {id:"EMP-2024-005",name:"Ruth M. S. Langi, A.Md.Ak.",nip:"199505302024212005",type:"PPPK Paruh Waktu",position:"Pengelola Keuangan",unit:"Subbagian Keuangan",start:"2024-08-01",end:"2026-07-31",status:"Cuti",email:"ruth.langi@rsudtalaud.go.id",phone:"0812-4400-1205"},
+      {id:"EMP-2024-006",name:"Markus A. S. Pangalila, S.KM.",nip:"198611222024211006",type:"PPPK",position:"Epidemiolog Kesehatan",unit:"Instalasi Rekam Medis",start:"2024-03-01",end:"2029-02-28",status:"Aktif",email:"markus.pangalila@rsudtalaud.go.id",phone:"0813-4400-1206"},
+      {id:"EMP-2024-007",name:"Ester L. Mangundap, S.Gz.",nip:"199207142024212007",type:"PPPK Paruh Waktu",position:"Nutrisionis",unit:"Instalasi Gizi",start:"2024-09-01",end:"2026-08-31",status:"Aktif",email:"ester.mangundap@rsudtalaud.go.id",phone:"0822-4400-1207"},
+      {id:"EMP-2024-008",name:"Samuel R. Wenas, A.Md.Fis.",nip:"199001022024211008",type:"PPPK",position:"Fisioterapis Terampil",unit:"Instalasi Rehabilitasi Medik",start:"2024-05-01",end:"2029-04-30",status:"Aktif",email:"samuel.wenas@rsudtalaud.go.id",phone:"0812-4400-1208"}
+    ];
+    let employees = loadEmployees();
+    let currentPage = "dashboard";
+    let currentUser = null;
+    const demoAccounts = {
+      admin: {password:"admin123",name:"Administrator",role:"Pengelola kepegawaian",initials:"AD"},
+      pegawai: {password:"pegawai123",name:"Maria T. Rondonuwu, S.Kep., Ns.",role:"Pegawai",initials:"MT",employeeId:"EMP-2024-001"}
+    };
+
+    function loadEmployees() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        return saved ? JSON.parse(saved) : structuredClone(defaultEmployees);
+      } catch (error) {
+        console.error("Tidak dapat membaca data demo:", error);
+        return structuredClone(defaultEmployees);
+      }
+    }
+    function saveEmployees(nextEmployees) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(nextEmployees));
+        employees = nextEmployees;
+        return true;
+      } catch (error) {
+        notify("Gagal menyimpan data di browser. Ruang penyimpanan mungkin penuh.", true);
+        return false;
+      }
+    }
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+    }
+    function initials(name) {
+      return String(name).replace(/[,\.].*/, "").split(/\s+/).slice(0,2).map(part => part[0] || "").join("").toUpperCase();
+    }
+    function notify(message, error = false) {
+      const host = document.getElementById("toastHost");
+      host.innerHTML = `<div class="toast${error ? " error" : ""}" role="status">${escapeHtml(message)}</div>`;
+      window.setTimeout(() => { host.innerHTML = ""; }, 3400);
+    }
+    function formatDate(date) {
+      if (!date) return "—";
+      const parsed = new Date(date + "T00:00:00");
+      return Number.isNaN(parsed.getTime()) ? "—" : new Intl.DateTimeFormat("id-ID", {day:"2-digit",month:"short",year:"numeric"}).format(parsed);
+    }
+    function isAdmin() {
+      return Boolean(currentUser && !currentUser.employeeId);
+    }
+    function visibleEmployees() {
+      if (!currentUser) return [];
+      return isAdmin() ? employees : employees.filter(item => item.id === currentUser.employeeId);
+    }
+    function showApp(user = currentUser) {
+      currentUser = user;
+      const profile = user.employeeId && employees.find(item => item.id === user.employeeId);
+      document.getElementById("userAvatar").textContent = profile ? initials(profile.name) : user.initials;
+      document.getElementById("userDisplayName").textContent = profile ? profile.name : user.name;
+      document.getElementById("userRoleLabel").textContent = user.role;
+      document.querySelectorAll("[data-admin-only]").forEach(element => element.classList.toggle("hidden", !isAdmin()));
+      document.querySelectorAll("[data-employee-only]").forEach(element => element.classList.toggle("hidden", isAdmin()));
+      document.querySelector('#navigation [data-page="dashboard"]').lastChild.textContent = isAdmin() ? "Dashboard" : "Dashboard Saya";
+      document.querySelector('#navigation [data-page="employees"]').lastChild.textContent = isAdmin() ? "Data Pegawai" : "Profil Saya";
+      document.querySelector('#navigation [data-page="documents"]').lastChild.textContent = isAdmin() ? "Dokumen" : "Dokumen Saya";
+      Personal.configureNavigation();
+      document.getElementById("loginScreen").classList.add("hidden");
+      document.getElementById("app").classList.remove("hidden");
+      renderPage(currentPage);
+    }
+    document.getElementById("loginForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      const account = demoAccounts[username];
+      if (account && password === account.password) {
+        currentUser = account;
+        if (document.getElementById("rememberMe").checked) sessionStorage.setItem("rsud-demo-account", username);
+        else sessionStorage.removeItem("rsud-demo-account");
+        showApp();
+      } else notify("Username atau password demo tidak sesuai.", true);
+    });
+    document.getElementById("togglePassword").addEventListener("click", event => {
+      const input = document.getElementById("password");
+      input.type = input.type === "password" ? "text" : "password";
+      event.currentTarget.textContent = input.type === "password" ? "Lihat" : "Sembunyi";
+    });
+    document.getElementById("forgotButton").addEventListener("click", () => notify("Akun demo: admin / admin123 atau pegawai / pegawai123."));
+    document.getElementById("logoutButton").addEventListener("click", () => {
+      sessionStorage.removeItem("rsud-demo-account");
+      currentUser = null;
+    currentPage = "dashboard";
+      document.getElementById("app").classList.add("hidden");
+      document.getElementById("loginScreen").classList.remove("hidden");
+      document.getElementById("username").value = "";
+      document.getElementById("password").value = "";
+    });
+    document.getElementById("notificationButton").addEventListener("click", () => notify("Belum ada notifikasi baru."));
+    document.getElementById("mobileMenu").addEventListener("click", () => document.getElementById("sidebar").classList.toggle("open"));
+    document.getElementById("resetDemo").addEventListener("click", () => {
+      if (!isAdmin()) return;
+      if (!confirm("Kembalikan daftar pegawai ke data demo awal? Perubahan lokal akan dihapus.")) return;
+      if (saveEmployees(structuredClone(defaultEmployees))) {
+        Personal.resetDemo();
+        renderPage(currentPage);
+        notify("Data demo dikembalikan ke kondisi awal.");
+      }
+    });
+    document.getElementById("navigation").addEventListener("click", event => {
+      const button = event.target.closest("[data-page]");
+      if (!button) return;
+      currentPage = button.dataset.page;
+      document.querySelectorAll("#navigation [data-page]").forEach(item => item.classList.toggle("active", item === button));
+      document.getElementById("sidebar").classList.remove("open");
+      renderPage(currentPage);
+    });
+
+    function renderPage(page) {
+      if (!currentUser) return;
+      if ((!isAdmin() && ["reports","review"].includes(page)) || (isAdmin() && ["history","family","requests"].includes(page))) page = "dashboard";
+      currentPage = page;
+      document.querySelectorAll("#navigation [data-page]").forEach(item => item.classList.toggle("active", item.dataset.page === page));
+      const titles = {dashboard:isAdmin()?"Dashboard":"Dashboard Saya",employees:isAdmin()?"Data Pegawai":"Profil Saya",history:"Riwayat Hidup",family:"Data Keluarga & KP4",documents:isAdmin()?"Dokumen":"Dokumen Saya",requests:"Pengajuan Saya",review:"Verifikasi Pengajuan",reports:"Laporan"};
+      document.getElementById("crumbTitle").textContent = titles[page];
+      const content = document.getElementById("pageContent");
+      if (page === "dashboard") content.innerHTML = dashboardTemplate();
+      if (page === "employees") content.innerHTML = isAdmin() ? employeesTemplate() : Personal.profileTemplate();
+      if (page === "history") content.innerHTML = Personal.historyTemplate();
+      if (page === "family") content.innerHTML = Personal.familyTemplate();
+      if (page === "documents") content.innerHTML = isAdmin() ? documentsTemplate() : Personal.documentsTemplate();
+      if (page === "requests") content.innerHTML = Personal.requestsTemplate();
+      if (page === "review") content.innerHTML = Personal.reviewTemplate();
+      if (page === "reports") content.innerHTML = reportsTemplate();
+      bindPageActions(page);
+    }
+    function dashboardTemplate() {
+      if (!isAdmin()) return Personal.dashboardTemplate();
+      const roster = visibleEmployees();
+      const pppk = roster.filter(item => item.type === "PPPK").length;
+      const partTime = roster.length - pppk;
+      const active = roster.filter(item => item.status === "Aktif").length;
+      const units = new Set(roster.map(item => item.unit)).size;
+      const last = roster.slice(-3).reverse();
+      const activity = last.length ? last.map(item => `<div class="activity"><i class="activity-dot"></i><div><p>Data pegawai <strong>${escapeHtml(item.name)}</strong> tersedia di portal.</p><small>${escapeHtml(item.type)} · ${escapeHtml(item.unit)}</small></div></div>`).join("") : `<div class="empty">Belum ada aktivitas.</div>`;
+      const heading = isAdmin() ? "Dashboard Kepegawaian" : "Dashboard Saya";
+      const subtitle = isAdmin() ? "Ringkasan data PPPK RSUD Talaud" : "Ringkasan profil kepegawaian Anda";
+      const actions = isAdmin() ? `<button class="btn btn-outline" data-action="export">↓ Ekspor data</button><button class="btn btn-primary" data-action="add">＋ Tambah pegawai</button>` : "";
+      const quickActions = isAdmin()
+        ? `<button class="btn btn-outline w-full" data-action="add">＋ Tambah data pegawai</button><button class="btn btn-outline w-full" data-action="csv-import">↑ Impor dari CSV</button><button class="btn btn-outline w-full" data-page-link="reports">▥ Buka laporan</button>`
+        : `<button class="btn btn-outline w-full" data-page-link="employees">♙ Lihat profil saya</button>`;
+      return `<div class="page-heading"><div><h1>${heading}</h1><p>${subtitle} · <span id="todayLabel"></span></p></div><div class="heading-actions">${actions}</div></div>
+        <section class="stats">
+          <article class="card stat-card"><div class="stat-top"><span>${isAdmin()?"Total pegawai":"Profil saya"}</span><i class="stat-icon">♙</i></div><div class="stat-value" data-count="${roster.length}">0</div><div class="stat-caption">${isAdmin()?"Seluruh pegawai terdaftar":"Data pribadi yang ditautkan"}</div></article>
+          <article class="card stat-card"><div class="stat-top"><span>PPPK</span><i class="stat-icon">✚</i></div><div class="stat-value" data-count="${pppk}">0</div><div class="stat-caption">Pegawai penuh waktu</div></article>
+          <article class="card stat-card"><div class="stat-top"><span>PPPK Paruh Waktu</span><i class="stat-icon">◷</i></div><div class="stat-value" data-count="${partTime}">0</div><div class="stat-caption">Pegawai paruh waktu</div></article>
+          <article class="card stat-card"><div class="stat-top"><span>${isAdmin()?"Pegawai aktif":"Status saya"}</span><i class="stat-icon">✓</i></div><div class="stat-value" data-count="${active}">0</div><div class="stat-caption">${isAdmin()?`${units} unit kerja terwakili`:`${units ? "1" : "0"} unit kerja ditautkan`}</div></article>
+        </section>
+        <section class="dashboard-grid">
+          <article class="card panel"><div class="panel-head"><div><h2>Komposisi pegawai</h2><p>Distribusi status kepegawaian</p></div><div class="legend"><span>PPPK</span><span>Paruh waktu</span></div></div><div class="chart" aria-label="Grafik komposisi pegawai">${chartTemplate(pppk, partTime)}</div></article>
+          <article class="card panel"><div class="panel-head"><div><h2>${isAdmin()?"Distribusi kontrak":"Informasi profil"}</h2><p>${isAdmin()?"Jumlah berdasarkan jenis pegawai":"Ringkasan data Anda"}</p></div></div><div class="contract-list">${contractTemplate(pppk, partTime, roster)}</div></article>
+        </section>
+        <section class="bottom-grid">
+          <article class="card panel"><div class="panel-head"><div><h2>${isAdmin()?"Aktivitas data terbaru":"Data profil saya"}</h2><p>${isAdmin()?"Ringkasan pegawai dalam daftar":"Informasi pribadi yang ditautkan ke akun ini"}</p></div><button class="text-button" data-page-link="employees">${isAdmin()?"Lihat daftar →":"Lihat profil →"}</button></div><div class="activity-list">${activity}</div></article>
+          <article class="card panel"><div class="panel-head"><div><h2>Akses cepat</h2><p>${isAdmin()?"Kelola informasi kepegawaian":"Akses profil pribadi"}</p></div></div><div class="contract-list">${quickActions}</div></article>
+        </section>`;
+    }
+    function chartTemplate(pppk, partTime) {
+      const ratios = [0.48,0.64,0.58,0.73,0.68,0.84,0.78,0.92,0.8,0.95,0.87,1];
+      return ratios.map((ratio, index) => {
+        const first = Math.max(12, Math.round(ratio * (pppk || 1) / Math.max(pppk || 1, partTime || 1) * 100));
+        const second = Math.max(9, Math.round(ratio * (partTime || 1) / Math.max(pppk || 1, partTime || 1) * 60));
+        return `<div class="chart-col"><i class="bar" style="height:${first}%"></i><i class="bar alt" style="height:${second}%"></i><span class="month">${["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"][index]}</span></div>`;
+      }).join("");
+    }
+    function contractTemplate(pppk, partTime, roster) {
+      const total = Math.max(roster.length, 1);
+      const active = roster.filter(item=>item.status==="Aktif").length;
+      return `<div class="contract-row"><div class="contract-mark">PP</div><div class="contract-info"><strong>PPPK</strong><div class="progress"><i style="width:${Math.round(pppk/total*100)}%"></i></div></div><span class="contract-count">${pppk}</span></div>
+        <div class="contract-row"><div class="contract-mark">PW</div><div class="contract-info"><strong>PPPK Paruh Waktu</strong><div class="progress"><i style="width:${Math.round(partTime/total*100)}%"></i></div></div><span class="contract-count">${partTime}</span></div>
+        <div class="contract-row"><div class="contract-mark">AK</div><div class="contract-info"><strong>Status ${isAdmin()?"aktif":"saya"}</strong><div class="progress"><i style="width:${Math.round(active/total*100)}%"></i></div></div><span class="contract-count">${active}</span></div>`;
+    }
+    function employeesTemplate() {
+      const heading = isAdmin() ? "Data Pegawai" : "Profil Saya";
+      const description = isAdmin() ? "Kelola profil, status, dan informasi kontrak kepegawaian." : "Informasi kepegawaian pribadi Anda.";
+      const actions = isAdmin() ? `<button class="btn btn-outline" data-action="csv-import">↑ Impor CSV</button><button class="btn btn-outline" data-action="export">↓ Ekspor CSV</button><button class="btn btn-primary" data-action="add">＋ Tambah pegawai</button>` : "";
+      return `<div class="page-heading"><div><h1>${heading}</h1><p>${description}</p></div><div class="heading-actions">${actions}</div></div>
+        <div class="card table-card"><div class="table-tools"><div class="tool-group"><input class="search" id="employeeSearch" placeholder="⌕  Cari nama, NIP, jabatan..." aria-label="Cari pegawai"><select class="filter" id="typeFilter"><option value="">Semua jenis</option><option>PPPK</option><option>PPPK Paruh Waktu</option></select><select class="filter" id="statusFilter"><option value="">Semua status</option><option>Aktif</option><option>Cuti</option><option>Nonaktif</option></select></div><span id="resultCount" class="crumb"></span></div><div id="employeeTable"></div></div>
+        <p class="muted-note" style="margin-top:14px">${isAdmin()?"Data contoh dan perubahan disimpan lokal pada browser/perangkat ini. Jangan masukkan data pegawai yang sebenarnya pada demo.":"Akun pegawai hanya dapat melihat profil yang ditautkan dan tidak dapat mengubah data."}</p>`;
+    }
+    function renderEmployeeTable() {
+      const query = document.getElementById("employeeSearch")?.value.trim().toLowerCase() || "";
+      const type = document.getElementById("typeFilter")?.value || "";
+      const status = document.getElementById("statusFilter")?.value || "";
+      const roster = visibleEmployees();
+      const rows = roster.filter(item => {
+        const matches = [item.name,item.nip,item.position,item.unit,item.id].some(value => String(value).toLowerCase().includes(query));
+        return matches && (!type || item.type === type) && (!status || item.status === status);
+      });
+      document.getElementById("resultCount").textContent = isAdmin() ? `${rows.length} dari ${roster.length} pegawai` : `${rows.length} profil`;
+      const host = document.getElementById("employeeTable");
+      if (!rows.length) { host.innerHTML = `<div class="empty">${isAdmin()?"Tidak ada pegawai yang cocok. Coba ubah kata kunci atau filter.":"Profil Anda belum ditautkan ke data demo."}</div>`; return; }
+      const actionsHeader = isAdmin() ? "<th>Aksi</th>" : "";
+      host.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Pegawai</th><th>NIP</th><th>Jenis</th><th>Jabatan / Unit</th><th>Masa kontrak</th><th>Status</th>${actionsHeader}</tr></thead><tbody>${rows.map(item => `<tr><td><div class="employee-cell"><div class="employee-avatar">${escapeHtml(initials(item.name))}</div><div><span class="employee-name">${escapeHtml(item.name)}</span><span class="employee-sub">${escapeHtml(item.id)}</span></div></div></td><td>${escapeHtml(item.nip || "—")}</td><td>${escapeHtml(item.type)}</td><td>${escapeHtml(item.position)}<span class="employee-sub">${escapeHtml(item.unit)}</span></td><td>${formatDate(item.start)} – ${formatDate(item.end)}</td><td><span class="badge ${item.status==="Aktif"?"badge-active":item.status==="Cuti"?"badge-leave":"badge-inactive"}">${escapeHtml(item.status)}</span></td>${isAdmin()?`<td><div class="row-actions"><button title="Edit" aria-label="Edit" data-edit="${escapeHtml(item.id)}">✎</button><button title="Hapus" aria-label="Hapus" data-delete="${escapeHtml(item.id)}">×</button></div></td>`:""}</tr>`).join("")}</tbody></table></div>`;
+      host.querySelectorAll("[data-edit]").forEach(button => button.addEventListener("click", () => openEmployeeModal(button.dataset.edit)));
+      host.querySelectorAll("[data-delete]").forEach(button => button.addEventListener("click", () => deleteEmployee(button.dataset.delete)));
+    }
+    function documentsTemplate() {
+      return `<div class="page-heading"><div><h1>Dokumen Kepegawaian</h1><p>Area contoh untuk kategori dan checklist dokumen pegawai.</p></div><div class="heading-actions"><button class="btn btn-primary" data-action="upload">↑ Unggah dokumen</button></div></div>
+        <p class="muted-note">Fitur unggah pada prototipe ini hanya menampilkan nama file selama sesi browser. Berkas tidak diunggah atau disimpan ke server/Google Drive.</p>
+        <div class="doc-grid">
+          <article class="card doc-card"><div class="doc-icon">ID</div><h3>Identitas & Kepegawaian</h3><p>KTP, kartu keluarga, SK pengangkatan, dan perjanjian kerja.</p><button class="btn btn-outline" data-action="upload">Pilih berkas</button></article>
+          <article class="card doc-card"><div class="doc-icon">ED</div><h3>Pendidikan & Kompetensi</h3><p>Ijazah, transkrip nilai, STR/SIP, dan sertifikat kompetensi.</p><button class="btn btn-outline" data-action="upload">Pilih berkas</button></article>
+          <article class="card doc-card"><div class="doc-icon">PK</div><h3>Kinerja & Kehadiran</h3><p>Evaluasi kinerja, presensi, dan dokumen pendukung lainnya.</p><button class="btn btn-outline" data-action="upload">Pilih berkas</button></article>
+        </div><div class="card panel" style="margin-top:16px"><div class="panel-head"><div><h2>Berkas yang dipilih</h2><p>Daftar sementara pada sesi ini</p></div></div><div id="fileList" class="activity-list"><div class="empty">Belum ada berkas dipilih.</div></div><input id="documentInput" type="file" multiple class="hidden"></div>`;
+    }
+    function reportsTemplate() {
+      const roster = visibleEmployees();
+      const total = roster.length;
+      const active = roster.filter(item=>item.status==="Aktif").length;
+      const units = new Set(roster.map(item=>item.unit)).size;
+      return `<div class="page-heading"><div><h1>Laporan & Analitik</h1><p>Ringkasan terhitung dari data demo pada browser ini.</p></div><div class="heading-actions"><button class="btn btn-primary" data-action="export">↓ Unduh CSV pegawai</button></div></div>
+        <div class="report-grid">
+          <article class="card report-card"><h3>Rekapitulasi pegawai</h3><p>Jumlah data pegawai berdasarkan jenis pengangkatan dan status.</p><div class="report-metric">${total}</div><div class="report-sub">Total pegawai · ${active} aktif · ${total-active} lainnya</div></article>
+          <article class="card report-card"><h3>Cakupan unit kerja</h3><p>Unit kerja yang tercantum pada data pegawai.</p><div class="report-metric">${units}</div><div class="report-sub">Unit kerja terwakili dalam daftar</div></article>
+          <article class="card report-card"><h3>PPPK</h3><p>Pegawai dengan perjanjian kerja waktu penuh.</p><div class="report-metric">${roster.filter(item=>item.type==="PPPK").length}</div><div class="report-sub">Dari ${total} seluruh data</div></article>
+          <article class="card report-card"><h3>PPPK Paruh Waktu</h3><p>Pegawai dengan skema perjanjian kerja paruh waktu.</p><div class="report-metric">${roster.filter(item=>item.type==="PPPK Paruh Waktu").length}</div><div class="report-sub">Dari ${total} seluruh data</div></article>
+        </div><div class="card panel" style="margin-top:16px"><div class="panel-head"><div><h2>Ekspor dan impor data</h2><p>CSV dapat dibuka dan dikelola dengan aplikasi spreadsheet.</p></div></div><div class="heading-actions"><button class="btn btn-outline" data-action="export">↓ Ekspor CSV</button><button class="btn btn-outline" data-action="csv-import">↑ Impor CSV</button></div></div>`;
+    }
+    function bindPageActions(page) {
+      if (page === "dashboard") {
+        document.getElementById("todayLabel").textContent = new Intl.DateTimeFormat("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(new Date());
+        document.querySelectorAll("[data-count]").forEach(el => {
+          const target = Number(el.dataset.count); const started = performance.now(); const duration = 550;
+          function frame(now) { const progress = Math.min(1,(now-started)/duration); el.textContent = Math.round(target*progress); if(progress<1) requestAnimationFrame(frame); }
+          requestAnimationFrame(frame);
+        });
+      }
+      if (page === "employees" && isAdmin()) {
+        ["employeeSearch","typeFilter","statusFilter"].forEach(id => document.getElementById(id).addEventListener("input", renderEmployeeTable));
+        renderEmployeeTable();
+      }
+      if (page === "documents" && isAdmin()) {
+        const input = document.getElementById("documentInput");
+        document.querySelectorAll('[data-action="upload"]').forEach(button => button.addEventListener("click", () => input.click()));
+        input.addEventListener("change", () => {
+          const names = [...input.files].map(file => file.name);
+          const host = document.getElementById("fileList");
+          host.innerHTML = names.length ? names.map(name => `<div class="activity"><i class="activity-dot"></i><div><p><strong>${escapeHtml(name)}</strong></p><small>Dipilih sementara · tidak diunggah ke server</small></div></div>`).join("") : `<div class="empty">Belum ada berkas dipilih.</div>`;
+        });
+      }
+      document.querySelectorAll("[data-action]").forEach(button => button.addEventListener("click", () => {
+        const action = button.dataset.action;
+        if (action === "add") openEmployeeModal();
+        if (action === "export") exportCsv();
+        if (action === "csv-import") document.getElementById("csvInput").click();
+      }));
+      document.querySelectorAll("[data-page-link]").forEach(button => button.addEventListener("click", () => {
+        const target = button.dataset.pageLink;
+        document.querySelector(`#navigation [data-page="${target}"]`).click();
+      }));
+      Personal.bind(page);
+    }
+    function openEmployeeModal(id) {
+      if (!isAdmin()) {
+        notify("Akun pegawai hanya dapat melihat profilnya sendiri.", true);
+        return;
+      }
+      const existing = employees.find(item => item.id === id);
+      const item = existing || {id:"",name:"",nip:"",type:"PPPK",position:"",unit:"",start:"",end:"",status:"Aktif",email:"",phone:""};
+      document.getElementById("modalHost").innerHTML = `<div class="modal-backdrop" id="modalBackdrop"><form class="modal" id="employeeForm"><div class="modal-head"><div><h2>${existing?"Edit data pegawai":"Tambah pegawai"}</h2><p>Lengkapi informasi kepegawaian berikut.</p></div><button type="button" class="close-button" data-close aria-label="Tutup">×</button></div>
+        <div class="modal-body"><div class="form-grid">
+          ${formField("name","Nama lengkap",item.name,"text",true,true)}
+          ${formField("nip","NIP",item.nip,"text",true)}
+          <div class="field"><label for="f-type">Jenis pegawai *</label><select id="f-type" name="type" required><option ${item.type==="PPPK"?"selected":""}>PPPK</option><option ${item.type==="PPPK Paruh Waktu"?"selected":""}>PPPK Paruh Waktu</option></select></div>
+          ${formField("position","Jabatan",item.position,"text",true)}
+          ${formField("unit","Unit kerja",item.unit,"text",true)}
+          <div class="field"><label for="f-status">Status</label><select id="f-status" name="status"><option ${item.status==="Aktif"?"selected":""}>Aktif</option><option ${item.status==="Cuti"?"selected":""}>Cuti</option><option ${item.status==="Nonaktif"?"selected":""}>Nonaktif</option></select></div>
+          ${formField("start","Tanggal mulai kontrak",item.start,"date",true)}
+          ${formField("end","Tanggal akhir kontrak",item.end,"date",true)}
+          ${formField("email","Email",item.email,"email",false)}
+          ${formField("phone","Nomor telepon",item.phone,"tel",false)}
+        </div></div><div class="modal-foot"><button type="button" class="btn btn-light" data-close>Batal</button><button type="submit" class="btn btn-primary">Simpan data</button></div></form></div>`;
+      document.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", closeModal));
+      document.getElementById("modalBackdrop").addEventListener("click", event => { if(event.target.id==="modalBackdrop") closeModal(); });
+      const employeeNameInput=document.getElementById("f-name");
+      if(employeeNameInput) {
+        employeeNameInput.addEventListener("input",()=>{employeeNameInput.value=employeeNameInput.value.toUpperCase();});
+        employeeNameInput.addEventListener("blur",()=>{employeeNameInput.value=employeeNameInput.value.trim().replace(/\s+/g," ").toUpperCase();});
+      }
+      document.getElementById("employeeForm").addEventListener("submit", event => {
+        event.preventDefault();
+        const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+        data.name=data.name.trim().replace(/\s+/g," ").toUpperCase();
+        if (employees.some(other => other.nip === data.nip && other.id !== id)) { notify("NIP tersebut sudah digunakan pada data lain.", true); return; }
+        if (data.end < data.start) { notify("Tanggal akhir kontrak harus setelah tanggal mulai.", true); return; }
+        const nextEmployees = existing
+          ? employees.map(employee => employee.id === id ? {...employee,...data} : employee)
+          : [{...data,id:`EMP-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`},...employees];
+        if (!saveEmployees(nextEmployees)) return;
+        closeModal(); renderPage(currentPage); notify(existing?"Data pegawai diperbarui.":"Pegawai berhasil ditambahkan.");
+      });
+    }
+    function formField(name,label,value,type,required,uppercaseBold=false) {
+      return `<div class="field"><label for="f-${name}">${escapeHtml(label)}${required?" *":""}</label><input id="f-${name}" name="${name}" type="${type}" value="${escapeHtml(value)}" ${uppercaseBold?'data-uppercase-bold="true"':""} ${required?"required":""}></div>`;
+    }
+    function closeModal() { document.getElementById("modalHost").innerHTML = ""; }
+    function deleteEmployee(id) {
+      if (!isAdmin()) {
+        notify("Akun pegawai tidak dapat menghapus data.", true);
+        return;
+      }
+      const item = employees.find(employee => employee.id === id);
+      if (!item || !confirm(`Hapus data ${item.name} dari daftar demo?`)) return;
+      const nextEmployees = employees.filter(employee => employee.id !== id);
+      if (!saveEmployees(nextEmployees)) return;
+      renderPage(currentPage); notify("Data pegawai dihapus.");
+    }
+    function csvCell(value) { return `"${String(value ?? "").replace(/"/g,'""')}"`; }
+    function exportCsv() {
+      if (!isAdmin()) {
+        notify("Ekspor data hanya tersedia untuk admin.", true);
+        return;
+      }
+      const columns = ["id","name","nip","type","position","unit","start","end","status","email","phone"];
+      const csv = [columns.join(","),...employees.map(item=>columns.map(column=>csvCell(item[column])).join(","))].join("\r\n");
+      const blob = new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob); link.download = "data-pegawai-rsud-talaud.csv"; link.click();
+      URL.revokeObjectURL(link.href); notify("File CSV berhasil disiapkan.");
+    }
+    document.getElementById("csvInput").addEventListener("change", async event => {
+      if (!isAdmin()) {
+        notify("Impor data hanya tersedia untuk admin.", true);
+        event.target.value = "";
+        return;
+      }
+      const file = event.target.files[0]; if (!file) return;
+      try {
+        const text = await file.text();
+        const records = parseCsv(text.replace(/^\uFEFF/,""));
+        if (records.length < 2) throw new Error("CSV harus memiliki baris header dan setidaknya satu baris data.");
+        const headers = records[0].map(header=>header.trim().toLowerCase());
+        const required = ["name","nip","type","position","unit","start","end"];
+        const missing = required.filter(header=>!headers.includes(header));
+        if (missing.length) throw new Error(`Kolom wajib tidak ditemukan: ${missing.join(", ")}.`);
+        const imported = records.slice(1).filter(row=>row.some(value=>value.trim())).map((row,index)=>{
+          const rowObject = Object.fromEntries(headers.map((header,i)=>[header,(row[i]||"").trim()]));
+          if (!rowObject.name || !rowObject.nip) throw new Error(`Nama dan NIP wajib diisi pada baris ${index+2}.`);
+          if (!["PPPK","PPPK Paruh Waktu"].includes(rowObject.type)) throw new Error(`Jenis pegawai tidak valid pada baris ${index+2}.`);
+          if (employees.some(item=>item.nip===rowObject.nip)) throw new Error(`NIP ${rowObject.nip} sudah ada. Impor dibatalkan.`);
+          return {id:rowObject.id||`EMP-${new Date().getFullYear()}-${String(Date.now()+index).slice(-6)}`,name:rowObject.name,nip:rowObject.nip,type:rowObject.type,position:rowObject.position,unit:rowObject.unit,start:rowObject.start,end:rowObject.end,status:rowObject.status||"Aktif",email:rowObject.email||"",phone:rowObject.phone||""};
+        });
+        if (!imported.length) throw new Error("Tidak ada baris data yang dapat diimpor.");
+        if (!saveEmployees([...imported,...employees])) return;
+        renderPage(currentPage); notify(`${imported.length} data pegawai berhasil diimpor.`);
+      } catch (error) { notify(error.message || "CSV gagal diproses.", true); }
+      event.target.value = "";
+    });
+    function parseCsv(text) {
+      const rows = []; let row = []; let value = ""; let quoted = false;
+      for (let i=0;i<text.length;i++) {
+        const char=text[i];
+        if (quoted) {
+          if(char==='"' && text[i+1]==='"'){value+='"';i++;}
+          else if(char==='"') quoted=false;
+          else value+=char;
+        } else if(char==='"') quoted=true;
+        else if(char===","){row.push(value);value="";}
+        else if(char==="\n"){row.push(value.replace(/\r$/,""));rows.push(row);row=[];value="";}
+        else value+=char;
+      }
+      if(quoted) throw new Error("CSV memiliki tanda kutip yang tidak berpasangan.");
+      if(value.length || row.length){row.push(value.replace(/\r$/,""));rows.push(row);}
+      return rows;
+    }
+    const rememberedAccount = sessionStorage.getItem("rsud-demo-account");
+    if (rememberedAccount && demoAccounts[rememberedAccount]) showApp(demoAccounts[rememberedAccount]);
+    else if (rememberedAccount) sessionStorage.removeItem("rsud-demo-account");
+  </script>
+</body>
+</html>
