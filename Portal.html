@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portal Kepegawaian RSUD Talaud</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root { color-scheme: light; font-family: Arial, sans-serif; color: #172b4d; background: #f3f6fa; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
+    .wrap { width: min(1120px, calc(100% - 32px)); margin: 28px auto; }
+    .card { background: white; border: 1px solid #e6edf5; border-radius: 14px; padding: 20px; box-shadow: 0 8px 26px #102a4310; }
+    .login-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; max-width: 860px; margin: 9vh auto; }
+    h1 { margin: 0 0 6px; font-size: 25px; }
+    h2 { margin: 0 0 14px; font-size: 18px; }
+    h3 { margin: 0 0 8px; font-size: 15px; }
+    p { line-height: 1.55; }
+    .muted, small { color: #64748b; }
+    .notice { margin: 14px 0; padding: 12px 14px; border-radius: 10px; background: #fff7e6; color: #784b00; font-size: 13px; line-height: 1.55; }
+    .success { background: #eafaf2; color: #12653d; }
+    .error { color: #b91c1c; }
+    .field { display: grid; gap: 6px; margin: 12px 0; }
+    label { color: #40516a; font-size: 13px; font-weight: 700; }
+    input, select, textarea { width: 100%; padding: 10px 11px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; color: #172b4d; }
+    textarea { min-height: 130px; resize: vertical; font: 13px/1.5 Consolas, monospace; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 8px 13px; border: 0; border-radius: 8px; background: #2563eb; color: white; font-weight: 700; }
+    .btn.secondary { background: #eaf0f8; color: #334860; }
+    .btn.danger { background: #b91c1c; }
+    .btn:disabled { opacity: .6; cursor: wait; }
+    .row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+    .between { justify-content: space-between; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .grid .wide { grid-column: 1 / -1; }
+    .tabs { display: flex; gap: 7px; flex-wrap: wrap; margin: 0 0 16px; }
+    .tab { border: 1px solid #dce5ef; border-radius: 8px; padding: 8px 12px; background: white; color: #43536b; }
+    .tab.active { border-color: #2563eb; background: #edf4ff; color: #1747a6; font-weight: 700; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid #e8eef5; text-align: left; vertical-align: top; }
+    th { color: #64748b; font-size: 11px; text-transform: uppercase; }
+    .list { display: grid; gap: 10px; }
+    .list-item { padding: 12px; border: 1px solid #e8eef5; border-radius: 10px; }
+    .list-item p { margin: 5px 0; }
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 99px; background: #fff4d8; color: #805700; font-size: 11px; }
+    .badge.read { background: #eaf0f8; color: #64748b; }
+    .notification-count { min-width: 20px; text-align: center; }
+    .empty { color: #64748b; padding: 18px; text-align: center; }
+    #status { min-height: 22px; margin: 10px 0; font-size: 13px; }
+    .json-help { font-size: 12px; line-height: 1.5; }
+    @media (max-width: 720px) {
+      .login-grid, .grid { grid-template-columns: 1fr; }
+      .grid .wide { grid-column: auto; }
+      .wrap { margin: 14px auto; }
+      .topbar { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section id="loginScreen">
+      <header style="text-align:center;margin-bottom:22px">
+        <h1>Portal Kepegawaian RSUD Talaud</h1>
+        <div class="muted">Data tersimpan di Google Sheets dan Drive pemilik.</div>
+      </header>
+      <div id="setupNotice" class="notice hidden"></div>
+      <div id="loginStatus" role="status" style="min-height:22px;margin:10px 0;text-align:center"></div>
+      <div class="login-grid">
+        <section class="card">
+          <h2>Login Pegawai</h2>
+          <form id="employeeLoginForm">
+            <div class="field"><label for="username">Username</label><input id="username" autocomplete="username" required maxlength="32"></div>
+            <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required maxlength="128"></div>
+            <button class="btn" type="submit">Masuk</button>
+          </form>
+          <p class="muted" style="font-size:12px">Akun pegawai dibuat dan diatur oleh administrator.</p>
+        </section>
+        <section class="card">
+          <h2>Login Administrator</h2>
+          <p class="muted">Hanya akun Google pemilik penyimpanan yang dapat mengelola seluruh data.</p>
+          <div id="googleButton"></div>
+          <div id="googleUnavailable" class="muted hidden">Login Google belum dikonfigurasi. Administrator perlu mengatur GOOGLE_OAUTH_CLIENT_ID.</div>
+        </section>
+      </div>
+    </section>
+
+    <section id="appScreen" class="hidden">
+      <header class="topbar">
+        <div>
+          <h1>Portal Kepegawaian</h1>
+          <div id="identity" class="muted"></div>
+        </div>
+        <div class="row">
+          <button id="refreshButton" class="btn secondary" type="button">Muat ulang</button>
+          <button id="logoutButton" class="btn secondary" type="button">Keluar</button>
+        </div>
+      </header>
+      <div id="status" role="status"></div>
+      <nav id="adminTabs" class="tabs hidden">
+        <button class="tab active" data-tab="employees">Pegawai</button>
+        <button class="tab" data-tab="documents">Dokumen</button>
+        <button class="tab" data-tab="requests">Pengajuan</button>
+        <button class="tab" data-tab="notifications">Notifikasi</button>
+        <button class="tab" data-tab="assistant">Asisten AI</button>
+        <a id="sheetLink" class="tab" target="_blank" rel="noopener noreferrer">Buka Google Sheet</a>
+        <a id="folderLink" class="tab" target="_blank" rel="noopener noreferrer">Buka folder Drive</a>
+      </nav>
+      <section id="employeeView" class="hidden"></section>
+      <section id="adminView" class="hidden"></section>
+    </section>
+  </main>
+
+  <script>
+    const GOOGLE_CLIENT_ID = "<?= googleClientId ?>";
+    const SESSION_KEY = "rsud-portal-employee-session-v1";
+    let employeeToken = sessionStorage.getItem(SESSION_KEY) || "";
+    let googleIdToken = "";
+    let currentRole = "";
+    let employeeData = null;
+    let adminData = null;
+    let activeTab = "employees";
+    const statusBox = document.getElementById("status");
+
+    function escapeHtml(value) {
+      return String(value == null ? "" : value).replace(/[&<>"']/g, function(char) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char];
+      });
+    }
+
+    function setStatus(message, isError) {
+      statusBox.textContent = message || "";
+      statusBox.className = isError ? "error" : "muted";
+      const loginStatus = document.getElementById("loginStatus");
+      loginStatus.textContent = message || "";
+      loginStatus.className = isError ? "error" : "muted";
+    }
+
+    function rpc(name) {
+      const args = Array.prototype.slice.call(arguments, 1);
+      return new Promise(function(resolve, reject) {
+        const runner = google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(function(error) {
+            reject(new Error(error && error.message ? error.message : "Permintaan gagal."));
+          });
+        runner[name].apply(runner, args);
+      });
+    }
+
+    function showLogin() {
+      currentRole = "";
+      document.getElementById("appScreen").classList.add("hidden");
+      document.getElementById("loginScreen").classList.remove("hidden");
+    }
+
+    function showApp(role, label) {
+      currentRole = role;
+      document.getElementById("loginScreen").classList.add("hidden");
+      document.getElementById("appScreen").classList.remove("hidden");
+      document.getElementById("identity").textContent = label;
+      document.getElementById("adminTabs").classList.toggle("hidden", role !== "admin");
+      document.getElementById("employeeView").classList.toggle("hidden", role !== "employee");
+      document.getElementById("adminView").classList.toggle("hidden", role !== "admin");
+    }
+
+    function runAction(button, action) {
+      button.disabled = true;
+      setStatus("Memproses...", false);
+      return Promise.resolve().then(action).then(function(result) {
+        button.disabled = false;
+        setStatus("Selesai.", false);
+        return result;
+      }).catch(function(error) {
+        button.disabled = false;
+        setStatus(error.message, true);
+        return null;
+      });
+    }
+
+    function displayFile(payload) {
+      const binary = atob(payload.base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index);
+      const blob = new Blob([bytes], { type: payload.mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = payload.name;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById("employeeLoginForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const button = event.currentTarget.querySelector("button[type=submit]");
+      runAction(button, function() {
+        return rpc("employeeLogin",
+          document.getElementById("username").value,
+          document.getElementById("password").value
+        ).then(function(result) {
+          employeeToken = result.token;
+          sessionStorage.setItem(SESSION_KEY, employeeToken);
+          employeeData = result.data;
+          renderEmployee();
+        });
+      });
+    });
+
+    document.getElementById("logoutButton").addEventListener("click", function() {
+      if (currentRole === "employee" && employeeToken) {
+        rpc("employeeLogout", employeeToken).catch(function(error) { console.error(error); });
+      }
+      employeeToken = "";
+      sessionStorage.removeItem(SESSION_KEY);
+      googleIdToken = "";
+      employeeData = null;
+      adminData = null;
+      showLogin();
+      setStatus("", false);
+    });
+
+    document.getElementById("refreshButton").addEventListener("click", function(event) {
+      const button = event.currentTarget;
+      runAction(button, function() {
+        return currentRole === "admin" ? loadAdmin() : loadEmployee();
+      });
+    });
+
+    function handleGoogleCredential(response) {
+      googleIdToken = response.credential;
+      setStatus("Memverifikasi akun administrator...", false);
+      loadAdmin().catch(function(error) {
+        googleIdToken = "";
+        setStatus(error.message, true);
+      });
+    }
+
+    function loadEmployee() {
+      return rpc("employeeGetDashboard", employeeToken).then(function(data) {
+        employeeData = data;
+        renderEmployee();
+      }).catch(function(error) {
+        employeeToken = "";
+        sessionStorage.removeItem(SESSION_KEY);
+        showLogin();
+        throw error;
+      });
+    }
+
+    function renderEmployee() {
+      if (!employeeData) return;
+      const employee = employeeData.employee;
+      showApp("employee", employee.name + " · " + employee.position);
+      const unread = employeeData.notifications.filter(function(item) { return !item.readAt; }).length;
+      const notificationRows = employeeData.notifications.length
+        ? employeeData.notifications.map(function(item) {
+            return '<article class="list-item"><div class="row between"><strong>' + escapeHtml(item.title)
+              + '</strong><span class="badge ' + (item.readAt ? "read" : "") + '">'
+              + (item.readAt ? "Dibaca" : "Baru") + '</span></div><p>'
+              + escapeHtml(item.message) + '</p><small>' + escapeHtml(item.createdAt)
+              + '</small>' + (!item.readAt ? ' <button class="btn secondary" data-read-notification="' + escapeHtml(item.id) + '">Tandai dibaca</button>' : "")
+              + '</article>';
+          }).join("")
+        : '<div class="empty">Belum ada notifikasi.</div>';
+      const documents = employeeData.documents.length
+        ? employeeData.documents.map(function(item) {
+            return '<div class="list-item row between"><span><strong>' + escapeHtml(item.name)
+              + '</strong><br><small>' + escapeHtml(item.mimeType) + ' · ' + escapeHtml(item.createdAt)
+              + '</small></span><button class="btn secondary" data-download="' + escapeHtml(item.id) + '">Unduh</button></div>';
+          }).join("")
+        : '<div class="empty">Belum ada dokumen.</div>';
+      const requests = employeeData.requests.length
+        ? employeeData.requests.map(function(item) {
+            return '<div class="list-item"><strong>' + escapeHtml(item.status) + '</strong><p>'
+              + escapeHtml(item.reason) + '</p><small>' + escapeHtml(item.createdAt)
+              + (item.reviewNote ? " · " + escapeHtml(item.reviewNote) : "") + '</small></div>';
+          }).join("")
+        : '<div class="empty">Belum ada pengajuan perubahan.</div>';
+      const profileJson = JSON.stringify(employeeData.personal, null, 2);
+      document.getElementById("employeeView").innerHTML =
+        '<div class="grid">' +
+        '<section class="card wide"><div class="row between"><div><h2>Profil saya</h2><div class="muted">' + escapeHtml(employee.type)
+        + ' · ' + escapeHtml(employee.unit) + '</div></div><span class="badge">' + unread + ' notifikasi baru</span></div>' +
+        '<div class="table-wrap"><table><tbody><tr><th>Nama</th><td>' + escapeHtml(employee.name)
+        + '</td><th>NIP</th><td>' + escapeHtml(employee.nip) + '</td></tr><tr><th>Jabatan</th><td>'
+        + escapeHtml(employee.position) + '</td><th>Status</th><td>' + escapeHtml(employee.status)
+        + '</td></tr><tr><th>Kontrak</th><td>' + escapeHtml(employee.start) + ' – ' + escapeHtml(employee.end)
+        + '</td><th>Email</th><td>' + escapeHtml(employee.email) + '</td></tr></tbody></table></div></section>' +
+        '<section class="card"><h2>Ajukan perubahan profil</h2><p class="muted json-help">Ajukan data dalam format JSON. Perubahan baru diterapkan setelah disetujui admin.</p>' +
+        '<form id="profileRequestForm"><div class="field"><label for="profileChanges">Data yang diubah (JSON)</label><textarea id="profileChanges" required placeholder=\'{"phone":"08..."}\'></textarea></div>' +
+        '<div class="field"><label for="requestReason">Alasan</label><input id="requestReason" required maxlength="1000"></div>' +
+        '<button class="btn" type="submit">Kirim pengajuan</button></form></section>' +
+        '<section class="card"><h2>Dokumen saya</h2><form id="uploadForm"><div class="field"><label for="uploadFile">PDF/JPG/PNG, maksimal 1 MB</label><input id="uploadFile" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required></div>' +
+        '<button class="btn" type="submit">Unggah ke folder saya</button></form><div class="list" style="margin-top:12px">' + documents + '</div></section>' +
+        '<section class="card"><h2>Notifikasi tersimpan · ' + unread + ' belum dibaca</h2><div class="list">' + notificationRows
+        + '</div></section><section class="card wide"><h2>Status pengajuan</h2><div class="list">' + requests + '</div></section></div>';
+
+      document.getElementById("profileRequestForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        const button = event.currentTarget.querySelector("button");
+        let changes;
+        try { changes = JSON.parse(document.getElementById("profileChanges").value); }
+        catch (error) { setStatus("JSON perubahan tidak valid.", true); return; }
+        runAction(button, function() {
+          return rpc("employeeUpdateProfile", employeeToken, changes, document.getElementById("requestReason").value)
+            .then(loadEmployee);
+        });
+      });
+
+      document.getElementById("uploadForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const button = form.querySelector("button");
+        const file = document.getElementById("uploadFile").files[0];
+        if (!file || file.size > 1024 * 1024) { setStatus("Pilih file maksimal 1 MB.", true); return; }
+        const allowed = ["application/pdf", "image/jpeg", "image/png"];
+        if (!allowed.includes(file.type)) { setStatus("Format harus PDF, JPG, atau PNG.", true); return; }
+        runAction(button, function() {
+          return new Promise(function(resolve, reject) {
+            const reader = new FileReader();
+            reader.onerror = function() { reject(new Error("File gagal dibaca.")); };
+            reader.onload = function() {
+              const base64 = String(reader.result).split(",")[1];
+              rpc("employeeUploadDocument", employeeToken, file.name, file.type, base64)
+                .then(resolve).catch(reject);
+            };
+            reader.readAsDataURL(file);
+          }).then(loadEmployee);
+        });
+      });
+
+      document.querySelectorAll("[data-read-notification]").forEach(function(button) {
+        button.addEventListener("click", function() {
+          runAction(button, function() {
+            return rpc("employeeMarkNotificationRead", employeeToken, button.dataset.readNotification).then(loadEmployee);
+          });
+        });
+      });
+      document.querySelectorAll("[data-download]").forEach(function(button) {
+        button.addEventListener("click", function() {
+          runAction(button, function() {
+            return rpc("employeeDownloadDocument", employeeToken, button.dataset.download).then(displayFile);
+          });
+        });
+      });
+    }
+
+    function renderAdmin() {
+      if (!adminData) return;
+      document.querySelectorAll("[data-tab]").forEach(function(button) {
+        button.classList.toggle("active", button.dataset.tab === activeTab);
+      });
+      const host = document.getElementById("adminView");
+      if (activeTab === "employees") renderAdminEmployees(host);
+      if (activeTab === "documents") renderAdminDocuments(host);
+      if (activeTab === "requests") renderAdminRequests(host);
+      if (activeTab === "notifications") renderAdminNotifications(host);
+      if (activeTab === "assistant") renderAdminAssistant(host);
+    }
+
+    function renderAdminEmployees(host) {
+      const rows = adminData.employees.map(function(employee) {
+        const account = adminData.users && adminData.users.find(function(user) { return user.employeeId === employee.id; });
+        return '<tr><td>' + escapeHtml(employee.name) + '<br><small>' + escapeHtml(employee.id) + '</small></td><td>'
+          + escapeHtml(employee.nip) + '</td><td>' + escapeHtml(employee.position) + '<br><small>'
+          + escapeHtml(employee.unit) + '</small></td><td>' + escapeHtml(employee.status) + '</td><td>'
+          + escapeHtml(account ? account.username : "—") + '</td><td class="row">'
+          + '<button class="btn secondary" data-edit="' + escapeHtml(employee.id) + '">Edit</button>'
+          + '<button class="btn secondary" data-reset="' + escapeHtml(employee.id) + '">Reset password</button>'
+          + (employee.status !== "Nonaktif" ? '<button class="btn danger" data-deactivate="' + escapeHtml(employee.id) + '">Nonaktifkan</button>' : "")
+          + '</td></tr>';
+      }).join("");
+      host.innerHTML = '<div class="grid"><section class="card wide"><div class="row between"><h2>Data pegawai (' + adminData.employees.length
+        + ')</h2><button class="btn" id="newEmployee">Tambah pegawai</button></div><div class="table-wrap"><table><thead><tr><th>Nama</th><th>NIP</th><th>Jabatan / Unit</th><th>Status</th><th>Username</th><th>Aksi</th></tr></thead><tbody>'
+        + (rows || '<tr><td colspan="6" class="empty">Belum ada data pegawai. Tambahkan pegawai untuk membuat folder dan akun.</td></tr>')
+        + '</tbody></table></div></section><section id="employeeFormCard" class="card wide hidden"></section></div>';
+
+      document.getElementById("newEmployee").addEventListener("click", function() { renderEmployeeForm(); });
+      document.querySelectorAll("[data-edit]").forEach(function(button) {
+        button.addEventListener("click", function() {
+          const employee = adminData.employees.find(function(item) { return item.id === button.dataset.edit; });
+          renderEmployeeForm(employee);
+        });
+      });
+      document.querySelectorAll("[data-reset]").forEach(function(button) {
+        button.addEventListener("click", function() {
+          const employee = adminData.employees.find(function(item) { return item.id === button.dataset.reset; });
+          const password = prompt("Masukkan password baru (minimal 12 karakter) untuk " + employee.name + ":");
+          if (!password) return;
+          runAction(button, function() {
+            return rpc("adminResetEmployeePassword", googleIdToken, employee.username || getUsernameByEmployee(employee.id), password)
+              .then(loadAdmin);
+          });
+        });
+      });
+      document.querySelectorAll("[data-deactivate]").forEach(function(button) {
+        button.addEventListener("click", function() {
+          if (!confirm("Nonaktifkan akun dan akses " + button.dataset.deactivate + "?")) return;
+          runAction(button, function() {
+            return rpc("adminDeactivateEmployee", googleIdToken, button.dataset.deactivate).then(loadAdmin);
+          });
+        });
+      });
+    }
+
+    function getUsernameByEmployee(employeeId) {
+      return adminData.users && adminData.users.find(function(user) { return user.employeeId === employeeId; })
+        ? adminData.users.find(function(user) { return user.employeeId === employeeId; }).username
+        : "";
+    }
+
+    function renderEmployeeForm(employee) {
+      const formCard = document.getElementById("employeeFormCard");
+      formCard.classList.remove("hidden");
+      const editing = Boolean(employee);
+      formCard.innerHTML = '<h2>' + (editing ? "Edit data pegawai" : "Tambah pegawai dan akun") + '</h2>' +
+        '<form id="adminEmployeeForm"><input type="hidden" name="id" value="' + escapeHtml(editing ? employee.id : "") + '">' +
+        '<div class="grid">' +
+        field("Nama lengkap", "name", editing ? employee.name : "", true) +
+        field("NIP", "nip", editing ? employee.nip : false, false) +
+        '<div class="field"><label>Jenis pegawai</label><select name="type"><option>PPPK</option><option>PPPK Paruh Waktu</option></select></div>' +
+        field("Jabatan", "position", editing ? employee.position : "", true) +
+        field("Unit kerja", "unit", editing ? employee.unit : "", true) +
+        '<div class="field"><label>Status</label><select name="status"><option>Aktif</option><option>Cuti</option><option>Nonaktif</option></select></div>' +
+        field("Tanggal mulai", "start", editing ? employee.start : "", false, "date") +
+        field("Tanggal akhir", "end", editing ? employee.end : "", false, "date") +
+        field("Email", "email", editing ? employee.email : "", false, "email") +
+        field("Telepon", "phone", editing ? employee.phone : "", false) +
+        (editing ? "" : field("Username pegawai", "username", "", true)) +
+        (editing ? "" : field("Password awal (min. 12 karakter)", "password", "", true, "password")) +
+        '<div class="field wide"><label>Data pribadi tambahan (JSON)</label><textarea name="personalJson">'
+        + escapeHtml(editing ? employee.personalJson || "{}" : "{}") + '</textarea><small class="json-help">Untuk data tambahan seperti biodata, riwayat, keluarga. Password tidak boleh ditulis di sini.</small></div></div>' +
+        '<div class="row"><button class="btn" type="submit">Simpan</button><button class="btn secondary" id="cancelEmployeeForm" type="button">Batal</button></div></form>';
+      if (editing) {
+        formCard.querySelector('[name="type"]').value = employee.type;
+        formCard.querySelector('[name="status"]').value = employee.status;
+      }
+      formCard.querySelector("#cancelEmployeeForm").addEventListener("click", function() { formCard.classList.add("hidden"); });
+      formCard.querySelector("form").addEventListener("submit", function(event) {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const data = Object.fromEntries(new FormData(form).entries());
+        let personal;
+        try { personal = JSON.parse(data.personalJson || "{}"); }
+        catch (error) { setStatus("Data pribadi harus berupa JSON yang valid.", true); return; }
+        data.personalJson = personal;
+        const button = form.querySelector('button[type="submit"]');
+        runAction(button, function() {
+          const method = editing ? "adminUpdateEmployee" : "adminCreateEmployee";
+          return rpc(method, googleIdToken, data).then(function() {
+            setStatus(editing ? "Data pegawai diperbarui." : "Pegawai dan folder Drive berhasil dibuat.", false);
+            return loadAdmin();
+          });
+        });
+      });
+    }
+
+    function field(label, name, value, required, type) {
+      let actualValue = value;
+      if (actualValue === false || actualValue == null) actualValue = "";
+      return '<div class="field"><label>' + escapeHtml(label) + '</label><input name="' + escapeHtml(name)
+        + '" type="' + escapeHtml(type || "text") + '" value="' + escapeHtml(actualValue)
+        + '" ' + (required ? "required" : "") + '></div>';
+    }
+
+    function renderAdminRequests(host) {
+      const requests = adminData.requests || [];
+      const rows = requests.map(function(item) {
+        const employee = adminData.employees.find(function(candidate) { return candidate.id === item.employeeId; });
+        return '<article class="list-item"><div class="row between"><strong>' + escapeHtml(employee ? employee.name : item.employeeId)
+          + '</strong><span class="badge">' + escapeHtml(item.status) + '</span></div><pre style="white-space:pre-wrap">'
+          + escapeHtml(item.changesJson) + '</pre><p>' + escapeHtml(item.reason) + '</p><small>' + escapeHtml(item.createdAt)
+          + '</small><div class="row" style="margin-top:10px"><button class="btn" data-decision="Disetujui" data-request="' + escapeHtml(item.id)
+          + '">Setujui</button><button class="btn danger" data-decision="Ditolak" data-request="' + escapeHtml(item.id)
+          + '">Tolak</button></div></article>';
+      }).join("");
+      host.innerHTML = '<section class="card"><h2>Pengajuan menunggu (' + requests.length + ')</h2><div class="list">'
+        + (rows || '<div class="empty">Tidak ada pengajuan yang menunggu.</div>') + '</div></section>';
+      host.querySelectorAll("[data-decision]").forEach(function(button) {
+        button.addEventListener("click", function() {
+          const note = prompt("Catatan admin (opsional):") || "";
+          runAction(button, function() {
+            return rpc("adminDecideRequest", googleIdToken, button.dataset.request, button.dataset.decision, note).then(loadAdmin);
+          });
+        });
+      });
+    }
+
+    function renderAdminDocuments(host) {
+      const rows = adminData.documents || [];
+      host.innerHTML = '<section class="card"><h2>Arsip dokumen di folder pegawai (' + rows.length + ')</h2><div class="table-wrap"><table><thead><tr><th>Pegawai</th><th>Nama dokumen</th><th>Jenis / ukuran</th><th>Tanggal</th><th></th></tr></thead><tbody>'
+        + (rows.length ? rows.map(function(item) {
+          const employee = adminData.employees.find(function(candidate) { return candidate.id === item.employeeId; });
+          return '<tr><td>' + escapeHtml(employee ? employee.name : item.employeeId) + '</td><td>'
+            + escapeHtml(item.name) + '</td><td>' + escapeHtml(item.mimeType) + ' · '
+            + Math.ceil(Number(item.size || 0) / 1024) + ' KB</td><td>' + escapeHtml(item.createdAt)
+            + '</td><td><button class="btn secondary" data-admin-download="' + escapeHtml(item.id) + '">Unduh</button></td></tr>';
+        }).join("") : '<tr><td colspan="5" class="empty">Belum ada dokumen.</td></tr>')
+        + '</tbody></table></div></section>';
+      host.querySelectorAll("[data-admin-download]").forEach(function(button) {
+        button.addEventListener("click", function() {
+          runAction(button, function() {
+            return rpc("adminDownloadDocument", googleIdToken, button.dataset.adminDownload).then(displayFile);
+          });
+        });
+      });
+    }
+
+    function renderAdminNotifications(host) {
+      const rows = adminData.notifications || [];
+      const options = adminData.employees.map(function(item) {
+        return '<option value="' + escapeHtml(item.id) + '">' + escapeHtml(item.name) + '</option>';
+      }).join("");
+      host.innerHTML = '<div class="grid"><section class="card"><h2>Kirim notifikasi</h2><form id="notificationForm">' +
+        '<div class="field"><label>Pegawai tujuan</label><select name="employeeId" required>' + options + '</select></div>' +
+        '<div class="field"><label>Judul</label><input name="title" maxlength="120" required></div>' +
+        '<div class="field"><label>Isi</label><textarea name="message" maxlength="1000" required></textarea></div>' +
+        '<button class="btn" type="submit">Kirim dan simpan</button></form></section>' +
+        '<section class="card"><h2>Riwayat notifikasi admin</h2><div class="list">' +
+        (rows.length ? rows.map(function(item) {
+          return '<article class="list-item"><strong>' + escapeHtml(item.title) + '</strong><p>' + escapeHtml(item.message)
+            + '</p><small>' + escapeHtml(item.createdAt) + '</small></article>';
+        }).join("") : '<div class="empty">Belum ada notifikasi admin.</div>') +
+        '</div></section></div>';
+      document.getElementById("notificationForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+        const button = event.currentTarget.querySelector("button");
+        runAction(button, function() {
+          return rpc("adminCreateNotification", googleIdToken, data.employeeId, data.title, data.message)
+            .then(loadAdmin);
+        });
+      });
+    }
+
+    function renderAdminAssistant(host) {
+      host.innerHTML = '<section class="card"><h2>Asisten AI Gemini</h2>' +
+        '<div class="notice">Jangan masukkan NIK, nomor rekening, informasi keluarga, data pasien, atau isi dokumen. Pertanyaan dikirim ke Google Gemini.</div>' +
+        '<form id="assistantForm"><div class="field"><label>Pertanyaan umum</label><textarea name="question" maxlength="3000" required></textarea></div>' +
+        '<button class="btn" type="submit">Tanya Gemini</button></form><div id="assistantAnswer" class="list-item hidden" style="white-space:pre-wrap"></div></section>';
+      document.getElementById("assistantForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const button = form.querySelector("button");
+        runAction(button, function() {
+          return rpc("adminAskGemini", googleIdToken, form.elements.question.value).then(function(answer) {
+            const output = document.getElementById("assistantAnswer");
+            output.textContent = answer;
+            output.classList.remove("hidden");
+          });
+        });
+      });
+    }
+
+    function loadAdmin() {
+      return rpc("adminGetDashboard", googleIdToken).then(function(data) {
+        adminData = data;
+        showApp("admin", "Administrator · " + data.ownerEmail);
+        document.getElementById("sheetLink").href = data.spreadsheetUrl;
+        document.getElementById("folderLink").href = data.rootFolderUrl;
+        renderAdmin();
+      });
+    }
+
+    document.querySelectorAll("[data-tab]").forEach(function(button) {
+      button.addEventListener("click", function() {
+        activeTab = button.dataset.tab;
+        renderAdmin();
+      });
+    });
+
+    rpc("getPublicConfig").then(function(config) {
+      const setupNotice = document.getElementById("setupNotice");
+      if (!config.ready) {
+        setupNotice.textContent = "Penyimpanan belum disiapkan. Pemilik harus menjalankan setupStorage_ dari editor Apps Script.";
+        setupNotice.classList.remove("hidden");
+      }
+      if (!GOOGLE_CLIENT_ID) {
+        document.getElementById("googleUnavailable").classList.remove("hidden");
+      } else {
+        const waitForGoogle = window.setInterval(function() {
+          if (!window.google || !google.accounts || !google.accounts.id) return;
+          window.clearInterval(waitForGoogle);
+          google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCredential });
+          google.accounts.id.renderButton(document.getElementById("googleButton"), {
+            theme: "outline", size: "large", text: "signin_with", shape: "rectangular"
+          });
+        }, 100);
+        window.setTimeout(function() {
+          if (window.google && google.accounts && google.accounts.id) return;
+          window.clearInterval(waitForGoogle);
+          const warning = document.getElementById("googleUnavailable");
+          warning.textContent = "Google Sign-In tidak dapat dimuat. Periksa Client ID dan origin OAuth.";
+          warning.classList.remove("hidden");
+        }, 10000);
+      }
+      if (employeeToken) loadEmployee().catch(function(error) { setStatus(error.message, true); });
+    }).catch(function(error) {
+      document.getElementById("setupNotice").textContent = error.message;
+      document.getElementById("setupNotice").classList.remove("hidden");
+    });
+  </script>
+</body>
+</html>
