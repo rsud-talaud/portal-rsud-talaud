@@ -744,7 +744,7 @@
       GOOGLE_CLIENT_ID = config.googleClientId || "";
       const setupNotice = document.getElementById("setupNotice");
       if (!config.ready) {
-        setupNotice.textContent = "Penyimpanan belum disiapkan. Pemilik harus menjalankan setupStorage_ dari editor Apps Script.";
+        setupNotice.textContent = "Penyimpanan belum disiapkan. Pemilik harus menjalankan setupStorage dari editor Apps Script.";
         setupNotice.classList.remove("hidden");
       }
       if (!GOOGLE_CLIENT_ID) {
