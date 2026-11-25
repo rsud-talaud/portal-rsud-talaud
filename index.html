@@ -63,6 +63,8 @@
 </head>
 <body>
   <main class="wrap">
+    <iframe id="appsScriptBridge" title="Koneksi aman ke Google Drive"
+      style="display:none" aria-hidden="true"></iframe>
     <section id="loginScreen">
       <header style="text-align:center;margin-bottom:22px">
         <h1>Portal Kepegawaian RSUD Talaud</h1>
@@ -130,7 +132,7 @@
   </main>
 
   <script>
-    const API_BASE_URL = "https://YOUR_CLOUD_RUN_SERVICE_URL";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjS4z9gHMxO5muv8_M2lNMpw7MLSCgekdxwP9pt6oSqWMZKmcT2IUewpQlfX4RlJ3z6w/exec";
     let GOOGLE_CLIENT_ID = "";
     const SESSION_KEY = "rsud-portal-employee-session-v1";
     let employeeToken = sessionStorage.getItem(SESSION_KEY) || "";
@@ -140,7 +142,55 @@
     let adminData = null;
     let activeTab = "employees";
     let employeeAuthChallenge = null;
+    let appsScriptBridgeReady = false;
+    let bridgeRequestId = 0;
+    const bridgePending = {};
+    const bridgeReadyWaiters = [];
+    const appsScriptBridge = document.getElementById("appsScriptBridge");
     const statusBox = document.getElementById("status");
+
+    function bridgePost(message) {
+      if (appsScriptBridge.contentWindow) {
+        appsScriptBridge.contentWindow.postMessage(message, "*");
+      }
+    }
+
+    function waitForAppsScriptBridge() {
+      if (appsScriptBridgeReady) return Promise.resolve();
+      return new Promise(function(resolve, reject) {
+        const timer = setTimeout(function() {
+          const index = bridgeReadyWaiters.indexOf(waiter);
+          if (index !== -1) bridgeReadyWaiters.splice(index, 1);
+          reject(new Error("Koneksi Google Apps Script belum siap. Periksa deployment Web App."));
+        }, 20000);
+        const waiter = function() {
+          clearTimeout(timer);
+          resolve();
+        };
+        bridgeReadyWaiters.push(waiter);
+      });
+    }
+
+    window.addEventListener("message", function(event) {
+      if (event.source !== appsScriptBridge.contentWindow) return;
+      const message = event.data || {};
+      if (message.type === "ready") {
+        appsScriptBridgeReady = true;
+        while (bridgeReadyWaiters.length) bridgeReadyWaiters.shift()();
+        return;
+      }
+      const pending = bridgePending[message.id];
+      if (!pending) return;
+      clearTimeout(pending.timer);
+      delete bridgePending[message.id];
+      if (message.type === "error") pending.reject(new Error(message.error || "Permintaan gagal."));
+      else pending.resolve(message.result);
+    });
+
+    appsScriptBridge.addEventListener("load", function() {
+      bridgePost({ type: "ping" });
+    });
+    appsScriptBridge.src = APPS_SCRIPT_URL + "?bridge=1";
 
     function escapeHtml(value) {
       return String(value == null ? "" : value).replace(/[&<>"']/g, function(char) {
@@ -158,119 +208,22 @@
 
     function rpc(name) {
       const args = Array.prototype.slice.call(arguments, 1);
-      if (!API_BASE_URL || API_BASE_URL.indexOf("YOUR_CLOUD_RUN_SERVICE_URL") !== -1) {
-        return Promise.reject(new Error("Atur API_BASE_URL ke URL layanan Cloud Run."));
+      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf("/macros/s/") === -1) {
+        return Promise.reject(new Error("Atur URL Web App Apps Script di APPS_SCRIPT_URL."));
       }
-
-      const routes = {
-        getPublicConfig: { method: "GET", path: "/api/config" },
-        employeeLogin: {
-          method: "POST", path: "/api/login",
-          body: function() { return { username: args[0], password: args[1] }; }
-        },
-        employeeVerifyAuthenticator: {
-          method: "POST", path: "/api/login/verify",
-          body: function() { return { challengeToken: args[0], code: args[1] }; }
-        },
-        employeeLogout: {
-          method: "POST", path: "/api/employee/logout", token: args[0], body: function() { return {}; }
-        },
-        employeeGetDashboard: {
-          method: "GET", path: "/api/employee/dashboard", token: args[0]
-        },
-        employeeMarkNotificationRead: {
-          method: "POST", path: "/api/employee/notifications/" + encodeURIComponent(args[1]) + "/read",
-          token: args[0], body: function() { return {}; }
-        },
-        employeeUpdateProfile: {
-          method: "POST", path: "/api/employee/requests", token: args[0],
-          body: function() { return { changes: args[1], reason: args[2] }; }
-        },
-        employeeUploadDocument: {
-          method: "POST", path: "/api/employee/documents", token: args[0],
-          body: function() {
-            return { fileName: args[1], mimeType: args[2], base64Data: args[3] };
-          }
-        },
-        employeeDownloadDocument: {
-          method: "GET", path: "/api/employee/documents/" + encodeURIComponent(args[1]) + "/download",
-          token: args[0]
-        },
-        adminGetDashboard: {
-          method: "GET", path: "/api/admin/dashboard", token: args[0]
-        },
-        adminCreateEmployee: {
-          method: "POST", path: "/api/admin/employees", token: args[0],
-          body: function() { return args[1]; }
-        },
-        adminUpdateEmployee: {
-          method: "PUT", path: "/api/admin/employees/" + encodeURIComponent(args[1].id),
-          token: args[0], body: function() { return args[1]; }
-        },
-        adminResetEmployeePassword: {
-          method: "POST",
-          path: "/api/admin/employees/" + encodeURIComponent(
-            (adminData.users.find(function(user) { return user.username === args[1]; }) || {}).employeeId || ""
-          ) + "/password",
-          token: args[0], body: function() { return { newPassword: args[2] }; }
-        },
-        adminApproveAuthenticator: {
-          method: "POST",
-          path: "/api/admin/employees/" + encodeURIComponent(args[1]) + "/authenticator/approve",
-          token: args[0], body: function() { return {}; }
-        },
-        adminRevokeAuthenticator: {
-          method: "POST",
-          path: "/api/admin/employees/" + encodeURIComponent(args[1]) + "/authenticator/revoke",
-          token: args[0], body: function() { return {}; }
-        },
-        adminDeactivateEmployee: {
-          method: "POST", path: "/api/admin/employees/" + encodeURIComponent(args[1]) + "/deactivate",
-          token: args[0], body: function() { return {}; }
-        },
-        adminCreateNotification: {
-          method: "POST", path: "/api/admin/notifications", token: args[0],
-          body: function() {
-            return { employeeId: args[1], title: args[2], message: args[3] };
-          }
-        },
-        adminDecideRequest: {
-          method: "POST",
-          path: "/api/admin/requests/" + encodeURIComponent(args[1]) + "/decision",
-          token: args[0],
-          body: function() { return { decision: args[2], reviewNote: args[3] }; }
-        },
-        adminDownloadDocument: {
-          method: "GET", path: "/api/admin/documents/" + encodeURIComponent(args[1]) + "/download",
-          token: args[0]
-        },
-        adminAskGemini: {
-          method: "POST", path: "/api/admin/assistant", token: args[0],
-          body: function() { return { question: args[1] }; },
-          answer: true
-        }
-      };
-      const route = routes[name];
-      if (!route || (route.token && !route.token)) {
-        return Promise.reject(new Error("Permintaan tidak dikenal atau sesi login tidak tersedia."));
-      }
-      const headers = {};
-      if (route.token) headers.Authorization = "Bearer " + route.token;
-      if (route.body) headers["Content-Type"] = "application/json";
-      return fetch(API_BASE_URL.replace(/\/+$/, "") + route.path, {
-        method: route.method,
-        headers: headers,
-        body: route.body ? JSON.stringify(route.body()) : undefined,
-        cache: "no-store"
-      }).then(function(response) {
-        if (response.status === 204) return null;
-        return response.text().then(function(text) {
-          let result;
-          try { result = JSON.parse(text); }
-          catch (error) { throw new Error("Respons API tidak dapat dibaca."); }
-          if (!response.ok) throw new Error(result.error || "Permintaan gagal.");
-          return route.answer ? result.answer : result;
+      return waitForAppsScriptBridge().then(function() {
+        return new Promise(function(resolve, reject) {
+          const id = "rpc-" + (++bridgeRequestId);
+          const timer = setTimeout(function() {
+            delete bridgePending[id];
+            reject(new Error("Permintaan ke Google Apps Script melewati batas waktu."));
+          }, 120000);
+          bridgePending[id] = { resolve: resolve, reject: reject, timer: timer };
+          bridgePost({ type: "rpc", id: id, action: name, args: args });
         });
+      }).then(function(result) {
+        if (name === "adminAskGemini") return result.answer;
+        return result;
       });
     }
 
